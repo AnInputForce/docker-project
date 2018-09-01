@@ -1,0 +1,49 @@
+version: '3.4'
+
+services:
+  redmine:
+    image: redmine-pma:3.4.5 # redmine3.4.5 with plugins && mysql of project manage assistant
+    container_name: redmine-web
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      # WARNING: without this line, your app' data will be lost.
+      - "./redmine-3.4.5/plugins:/usr/src/redmine/plugins"
+      - "./redmine-3.4.5/files:/usr/src/redmine/files"
+      - "./redmine-3.4.5/log:/usr/src/redmine/log"
+      - "./redmine-3.4.5/config:/usr/src/redmine/config"
+      - "./redmine-3.4.5/public/themes:/usr/src/redmine/public/themes"
+      - "./redmine-3.4.5/lib/redmine.rb:/usr/src/redmine/lib/redmine.rb"
+
+    environment:
+      REDMINE_DB_MYSQL: mysql
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: "redmine@git"
+      # REDMINE_NO_DB_MIGRATE: "true" # 起容器时开这两个参数，首页报内部错误
+      # REDMINE_PLUGINS_MIGRATE: "true" # 起容器时开这两个参数，首页报内部错误
+      TZ: Asia/Shanghai
+
+    links:
+      - mysql
+
+  mysql:
+    image: mysql:5.5 # 更高版本或mariadb有已知缺陷；
+    container_name: redmine-mysql
+    restart: always
+    # expose 3306 to client (navicat)
+    # ports:
+      # - "3306:3306"
+    volumes:
+      # change './docker/mysql/volume' to your own path
+      # WARNING: without this line, your data will be lost.
+      - "./docker/mysql/volume:/var/lib/mysql"
+    # mysql5.7.22可以启用 --init-connect='SET NAMES utf8mb4;' DEFAULT COLLATE utf8_general_ci
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci  --innodb-flush-log-at-trx-commit=0
+    
+    environment:
+      # MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      MYSQL_DATABASE: redmine
+      MYSQL_USER: redmine
+      MYSQL_ROOT_PASSWORD: "root@git"
+      MYSQL_PASSWORD: redmine@git

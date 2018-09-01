@@ -1,0 +1,57 @@
+# mail@dongguochao.com
+
+version: '3'
+
+services:
+  # 调度服务器jenkins-Master
+  jenkins:
+    container_name: master-jenkins
+    # build from ./Dockerfile
+    # build: ./
+    # build from images
+    image: jenkins:alpine
+    # working_dir: ~
+    # 表示当前容器具有特权
+    privileged: true
+    # command: /bin/sh -c ''
+    links:
+      - nodejs9
+      - java8
+    depends_on:
+      - nodejs9
+      - java8
+    ports:
+      - "5080:8080"  # expose 5080
+      - "50000:50000"
+    volumes:
+      - "./jenkins_home:/var/jenkins_home"
+
+  # node.js 9.11 + git 编译构建环境-slaver
+  nodejs9:
+    container_name: slaver-nodejs
+    # build from ./Dockerfile
+    build: ./node_project
+    # # build from images
+    # image: node:9-alpine
+    # expose 50002 to client (navicat)
+    # ports:
+    #   - "50002:22"
+    # working_dir: ~/node_project
+    volumes:
+      - "./node_project:/data/node_project"
+    command: /bin/sh -c 'tail -f /dev/null'
+  # java8 + mvn + git 编译构建环境-slaver
+  java8:
+    container_name: slaver-java
+    # build from ./Dockerfile
+    build: ./mvn_project
+    # # build from images
+    # image: node:9-alpine
+    # image: maven:alpine
+    # expose 50022 to client (navicat)
+    # ports:
+    #   - "50022:22"
+    # working_dir: ~/mvn_project
+    volumes:
+      - "./mvn_project:/data/mvn_project"
+    command: /bin/sh -c 'tail -f /dev/null'

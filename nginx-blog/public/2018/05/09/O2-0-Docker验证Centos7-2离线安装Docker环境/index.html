@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="序题记：搞定了就是故事，搞不定就是事故。 条件有限，开局只有一台开发机，要跑5套子系统组成的项目群。还要有一些辅助和验证的系统要跑在这上面。从配置来看，要想顺畅开心地完成项目群基础环境支撑，考虑引入资源消耗1/200的神器Docker：更难得是丝毫不用担心环境污染、版本冲突、以及突然开发服务器搞崩溃了； 吐槽避免采坑 实际上可能要跑的系统和辅助系统远超预计 申请的是4C/8G的PC server，">
+<meta name="keywords" content="离线,docker,centos7.2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker验证Centos7.2离线安装Docker环境">
+<meta property="og:url" content="http://opsdev.fun/2018/05/09/O2-0-Docker验证Centos7-2离线安装Docker环境/index.html">
+<meta property="og:site_name" content="AnInputForce">
+<meta property="og:description" content="序题记：搞定了就是故事，搞不定就是事故。 条件有限，开局只有一台开发机，要跑5套子系统组成的项目群。还要有一些辅助和验证的系统要跑在这上面。从配置来看，要想顺畅开心地完成项目群基础环境支撑，考虑引入资源消耗1/200的神器Docker：更难得是丝毫不用担心环境污染、版本冲突、以及突然开发服务器搞崩溃了； 吐槽避免采坑 实际上可能要跑的系统和辅助系统远超预计 申请的是4C/8G的PC server，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-17T05:07:27.950Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker验证Centos7.2离线安装Docker环境">
+<meta name="twitter:description" content="序题记：搞定了就是故事，搞不定就是事故。 条件有限，开局只有一台开发机，要跑5套子系统组成的项目群。还要有一些辅助和验证的系统要跑在这上面。从配置来看，要想顺畅开心地完成项目群基础环境支撑，考虑引入资源消耗1/200的神器Docker：更难得是丝毫不用担心环境污染、版本冲突、以及突然开发服务器搞崩溃了； 吐槽避免采坑 实际上可能要跑的系统和辅助系统远超预计 申请的是4C/8G的PC server，">
+
+
+
+
+
+
+  <link rel="canonical" href="http://opsdev.fun/2018/05/09/O2-0-Docker验证Centos7-2离线安装Docker环境/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Docker验证Centos7.2离线安装Docker环境 | AnInputForce</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnInputForce</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">蛮大人讲故事系列</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://opsdev.fun/2018/05/09/O2-0-Docker验证Centos7-2离线安装Docker环境/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kang.cunhua">
+      <meta itemprop="description" content="从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnInputForce">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker验证Centos7.2离线安装Docker环境
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-09 09:56:33" itemprop="dateCreated datePublished" datetime="2018-05-09T09:56:33+08:00">2018-05-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-06-17 13:07:27" itemprop="dateModified" datetime="2018-06-17T13:07:27+08:00">2018-06-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/diary/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="序"><a href="#序" class="headerlink" title="序"></a>序</h1><p>题记：搞定了就是故事，搞不定就是事故。</p>
+<p>条件有限，开局只有一台开发机，要跑5套子系统组成的项目群。还要有一些辅助和验证的系统要跑在这上面。从配置来看，要想顺畅开心地完成项目群基础环境支撑，考虑引入资源消耗1/200的神器Docker：更难得是丝毫不用担心环境污染、版本冲突、以及突然开发服务器搞崩溃了；</p>
+<h2 id="吐槽避免采坑"><a href="#吐槽避免采坑" class="headerlink" title="吐槽避免采坑"></a>吐槽避免采坑</h2><ul>
+<li>实际上可能要跑的系统和辅助系统远超预计</li>
+<li><del>申请的是4C/8G的PC server，后来查命令是1C/2G，10G空间，果断申请扩容了</del></li>
+<li>边干边写：整了四周；期间无数次崩溃，<del>还要应对乙方内部的质疑，</del>不知道自己是如何坚持下来的</li>
+</ul>
+<h3 id="第一周折腾无实质交付"><a href="#第一周折腾无实质交付" class="headerlink" title="第一周折腾无实质交付"></a>第一周折腾无实质交付</h3><ul>
+<li>MacBook上docker环境起了CentOS7.2容器，在容器中模拟离线安装Docker环境（盗梦空间）</li>
+<li>安装很成功，按官方教程启动服务时，崩溃到怀疑人生：<ul>
+<li>命令”systemctl start docker”报错：”docker Failed to get D-Bus connection”</li>
+<li>CentOS从7开始，安全考虑，容器内默认不加载D-Bus：直接影响就是systemctl不能起服务；</li>
+<li>github支招：加容器特权参数 –privileged ，启动非常之慢，不建议踩坑；参考<a href="https://github.com/moby/moby/issues/7459" target="_blank" rel="noopener">链接</a></li>
+<li>Docker官方支招：自己编译带systemctl服务的镜像 <a href="https://forums.docker.com/t/any-simple-and-safe-way-to-start-services-on-centos7-systemd/5695/4" target="_blank" rel="noopener">参考链接</a>，<ul>
+<li>然而我没能测试成功在容器中启动docker daemo</li>
+<li>其他服务没尝试，感兴趣的可自行研究</li>
+<li>放弃在容器中使用systemctl启动Docker镜像服务</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="第二周换Redhad7-2镜像"><a href="#第二周换Redhad7-2镜像" class="headerlink" title="第二周换Redhad7.2镜像"></a>第二周换Redhad7.2镜像</h3><ul>
+<li>还是报同样的错误：直接报缺5~8个一级依赖包</li>
+<li>后来分析不是CentOS和Redhad不同步，应该是甲方提供的CentOS源或系统优化或缺了一些默认的包；</li>
+</ul>
+<h3 id="第三周寄希望于甲方提供的内网源"><a href="#第三周寄希望于甲方提供的内网源" class="headerlink" title="第三周寄希望于甲方提供的内网源"></a>第三周寄希望于甲方提供的内网源</h3><ul>
+<li>协调再三给挂了源：是一个docker集群监控的源；沟通不畅，不认为挂错了源；</li>
+<li>甲方老师又忙。暂停修整了一周；</li>
+</ul>
+<h3 id="第四周重整旗鼓"><a href="#第四周重整旗鼓" class="headerlink" title="第四周重整旗鼓"></a>第四周重整旗鼓</h3><p>再三协调之后，放弃等待甲方老师的支援。决定还是自己搞。不就是一些一级依赖么，补全就是！</p>
+<p><del>主要是我方火力太猛：</del></p>
+<ul>
+<li><del>再不出活，无颜面对向兄弟们：虽然不上这些，采用笨办法也能干，但总归不忍</del></li>
+<li><del>再不交付，无法上得台面解释：</del></li>
+<li><del>自己选择的牛皮，哭着也要吹完，吹完美</del></li>
+</ul>
+<p>搞定。想来想去，还是毛选里的那句话支撑了我：</p>
+<p>自力更生，艰苦奋斗！</p>
+<p>最近在看一行禅师的《佛陀传》，希望能从中汲取心灵的力量。《天龙八部》里扫地僧也曾说过：</p>
+<blockquote>
+<p>只有佛法越高，慈悲之念越盛，武功绝技才能练得越我</p>
+</blockquote>
+<p>或许我辈须工作中修行，也是这个道理！</p>
+<h2 id="采坑记"><a href="#采坑记" class="headerlink" title="采坑记"></a>采坑记</h2><p>对，就是采坑。以下是从草稿中摘取的部分尝试：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>容器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>docker run -it –name dc7 ailyfeng/centos7.2.1511 /bin/bash</td>
+</tr>
+<tr>
+<td>2</td>
+<td>docker run -it –name dc88 sssllc/centos7.2-jdk1.8  /bin/bash</td>
+</tr>
+<tr>
+<td>3</td>
+<td>docker run -it –name ct7 centos /bin/bash</td>
+</tr>
+<tr>
+<td>4</td>
+<td>docker run -it –privileged –name dc99 sssllc/centos7.2-jdk1.8</td>
+</tr>
+<tr>
+<td>5</td>
+<td>docker build –rm -t centos:systemd . &amp;&amp; docker run -it –name dr7 centos:systemd</td>
+</tr>
+<tr>
+<td>6</td>
+<td>docker run -it –name dr18 yjjy0921/redhat7.2 /bin/bash</td>
+</tr>
+</tbody>
+</table>
+<h3 id="几个搞定依赖包的有用命令"><a href="#几个搞定依赖包的有用命令" class="headerlink" title="几个搞定依赖包的有用命令"></a>几个搞定依赖包的有用命令</h3><p>ldd应该是linux通用的命令；rpm和repotrack貌似是CentoOS的专有命令；</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>命令</th>
+<th>举例</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>ldd</td>
+<td>ldd wkhtmltopdf</td>
+<td>not found的就是对应的依赖包不存在，适用于二进制包（wkhtmltopdf）的命令；而需要安装的命令（docker-ce）只能通过安装报错来捕获缺失的依赖了</td>
+</tr>
+<tr>
+<td>2</td>
+<td>rpm -ql</td>
+<td>rpm -ql docker-ce</td>
+<td>查看安装的时候有哪些命令在PATH下，用这些命令去启动</td>
+</tr>
+<tr>
+<td>3</td>
+<td>repotrack</td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libgudev1</td>
+<td>打包下载指定架构(X86_63)所有的依赖到指定目录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="思路：先验证再服务器落地"><a href="#思路：先验证再服务器落地" class="headerlink" title="思路：先验证再服务器落地"></a>思路：先验证再服务器落地</h2><ul>
+<li>本地pull一个CentOS7.2的镜像</li>
+<li>只下载Docker及其依赖不安装</li>
+<li>安装验证</li>
+<li>考虑用户及用户组赋权</li>
+<li>cp至服务器尝试</li>
+</ul>
+<h1 id="安装docker"><a href="#安装docker" class="headerlink" title="安装docker"></a>安装docker</h1><h2 id="内网Linux基础依赖"><a href="#内网Linux基础依赖" class="headerlink" title="内网Linux基础依赖"></a>内网Linux基础依赖</h2><p>要安装Docker基础环境，必须满足：</p>
+<ul>
+<li>Linux内核必须大于3.10：登录内网服务器看了看，恰好3.10。够用，就不折腾了；</li>
+<li>需要支持device-mapper：已支持</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@pms tmp] uname -r</span><br><span class="line">3.10.0-327.e17.x86_64</span><br><span class="line">[root@pms tmp] ls -l /sys/class/misc/device-mapper</span><br><span class="line">lrwxrwxrwx. 1 root root 0 May 20 16:17 /sys/class/misc/device-mapper -&gt; ../../devices/virtual/misc/device-mapper</span><br></pre></td></tr></table></figure>
+<h2 id="环境模拟"><a href="#环境模拟" class="headerlink" title="环境模拟"></a>环境模拟</h2><p>MacBook上，起CentOS7.2容器，来验证思路；</p>
+<h3 id="拉取镜像，创建repo目录"><a href="#拉取镜像，创建repo目录" class="headerlink" title="拉取镜像，创建repo目录"></a>拉取镜像，创建repo目录</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:~ kangcunhua$ docker run -it --name dc88 sssllc/centos7.2-jdk1.8  /bin/bash</span><br><span class="line">[root@7d935562e0ae /]# java -version</span><br><span class="line">java version "1.8.0_111"</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_111-b14)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.111-b14, mixed mode)</span><br><span class="line">[root@7d935562e0ae /]# yum repo list</span><br><span class="line">Loaded plugins: fastestmirror, ovl</span><br><span class="line">No such command: repo. Please use /usr/bin/yum --help</span><br><span class="line">[root@7d935562e0ae /]# </span><br><span class="line">[root@7d935562e0ae /]# yum repolist</span><br><span class="line">...</span><br><span class="line">[root@7d935562e0ae home]# cd /usr/local/</span><br><span class="line">root@7d935562e0ae local]# mkdir yumrepo</span><br></pre></td></tr></table></figure>
+<h3 id="下载所需离线包"><a href="#下载所需离线包" class="headerlink" title="下载所需离线包"></a>下载所需离线包</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae local]# cd yumrepo/</span><br><span class="line">[root@7d935562e0ae yumrepo]# yum install --downloadonly --downloaddir=/usr/local/yumrepo/ docker</span><br></pre></td></tr></table></figure>
+<h3 id="安装createrepo"><a href="#安装createrepo" class="headerlink" title="安装createrepo"></a>安装createrepo</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae yum.repos.d]# yum install createrepo -y</span><br></pre></td></tr></table></figure>
+<h3 id="新建docker-repo"><a href="#新建docker-repo" class="headerlink" title="新建docker.repo"></a>新建docker.repo</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae yum.repos.d]# pwd</span><br><span class="line">/etc/yum.repos.d</span><br><span class="line">[root@7d935562e0ae yum.repos.d]# vi docker.repo</span><br></pre></td></tr></table></figure>
+<p><strong>docker.repo</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[docker-yum]</span><br><span class="line">name=dockeryum</span><br><span class="line">baseurl=file:///usr/local/yumrepo</span><br><span class="line">enable=1</span><br><span class="line">gpgcheck=0</span><br></pre></td></tr></table></figure>
+<h3 id="生成repo索引"><a href="#生成repo索引" class="headerlink" title="生成repo索引"></a>生成repo索引</h3><p>主要是将索引生成在/usr/local/yumrepo/repodata目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae yum.repos.d]# createrepo /usr/local/yumrepo/</span><br><span class="line">[root@7d935562e0ae yum.repos.d]# cd /usr/local/yumrepo/</span><br><span class="line">[root@7d935562e0ae yumrepo]# ls</span><br><span class="line">.....</span><br><span class="line">docker-client-1.13.1-53.git774336d.el7.centos.x86_64.rpm        repodata</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+<h2 id="安装docker并验证"><a href="#安装docker并验证" class="headerlink" title="安装docker并验证"></a>安装docker并验证</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae yumrepo]# yum --disablerepo=\* --enablerepo=docker-yum install docker -y</span><br><span class="line">[root@7d935562e0ae yumrepo]# docker -v</span><br><span class="line">Docker version 1.13.1, build 774336d/1.13.1</span><br></pre></td></tr></table></figure>
+<h3 id="尝试启动Hello-world"><a href="#尝试启动Hello-world" class="headerlink" title="尝试启动Hello-world"></a>尝试启动Hello-world</h3><p>此时会报错：提示docker daemon没有启动；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae /]# docker run hello-world</span><br><span class="line">/usr/bin/docker-current: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?.</span><br><span class="line">See '/usr/bin/docker-current run --help'.</span><br></pre></td></tr></table></figure>
+<h3 id="启动docker守护进程"><a href="#启动docker守护进程" class="headerlink" title="启动docker守护进程"></a>启动docker守护进程</h3><p>使用sysytemctl启动服务。此时会报错，是CentOS7.2容器的“安全”考虑，没有启动D-Bus：虽然不那么友好；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae /]# systemctl start docker </span><br><span class="line">Failed to get D-Bus connection: Operation not permitted</span><br></pre></td></tr></table></figure>
+<p>在能查到的资料里，即使是官方，也没有说明Docker Daemon的守护命令放置在哪儿，以便我们能直接运行；</p>
+<p>后续在安装Docker-CE时我找到了这个命令：使用rpm -ql docker查找该软件安装时在PATH下有哪些命令可以运行，成功找到了Docker Daemon所在：/usr/bin/dockerd 。详见文末参考；</p>
+<h3 id="直接运行-usr-bin-dockerd"><a href="#直接运行-usr-bin-dockerd" class="headerlink" title="直接运行/usr/bin/dockerd"></a>直接运行/usr/bin/dockerd</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@7d935562e0ae /]# /usr/bin/dockerd </span><br><span class="line">INFO[2018-05-22T11:55:22.811053980Z] libcontainerd: started new docker-containerd process  pid=53</span><br><span class="line">INFO[0000] starting containerd                           module=containerd revision=773c489c9c1b21a6d78b5c538cd395416ec50f88 version=v1.0.3</span><br><span class="line">ERRO[0000] failed to change OOM score to -500            error="write /proc/53/oom_score_adj: permission denied" module=containerd</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<p>仍旧报错，但至少验证了离线安装的思路是正确的。只是在CentOS7.2容器中无法启动Docker守护进程；</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>经过数轮的尝试，我们可以得出结论：</p>
+<ul>
+<li>验证了离线安装的思路是正确的</li>
+<li>CentOS7.2以及RedHat7.2容器中可以安装docker基础环境</li>
+<li>CentOS7.2以及RedHat7.2容器中无法启动Docker守护进程</li>
+<li>容器中无法启动Docker守护进程的事，不影响我们的实验目标</li>
+<li>默认yum install docker的版本是docker:Docker version 1.13.1</li>
+<li>现在Docker已变成Docker-CE:18.03.1-ce，需要验证离线安装Docker-CE</li>
+</ul>
+<h1 id="安装Docker-CE"><a href="#安装Docker-CE" class="headerlink" title="安装Docker-CE"></a>安装Docker-CE</h1><p>梳理思路，重来</p>
+<ul>
+<li>选择centos7.2基础镜像</li>
+<li>配置docker-ce源</li>
+<li>选择downloadonly的参数下载docker-ce及其依赖</li>
+<li>配置本地源</li>
+<li>指定本地源安装docker-ce</li>
+<li>条件有限，就不容器中起docker服务了</li>
+<li>进内网，验证</li>
+</ul>
+<h2 id="下载centos7-2基础镜像"><a href="#下载centos7-2基础镜像" class="headerlink" title="下载centos7.2基础镜像"></a>下载centos7.2基础镜像</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:docker-systemctl kangcunhua$ docker run -it --name dc18 sssllc/centos7.2-jdk1.8  /bin/bash</span><br><span class="line">[root@557a4e0c3e7e /]#</span><br></pre></td></tr></table></figure>
+<h2 id="配置docker-ce源"><a href="#配置docker-ce源" class="headerlink" title="配置docker-ce源"></a>配置docker-ce源</h2><p>如果不配置docker-ce源，默认安装的是docker1.13。大概是两年前的版本了。后续docker官方将社区版本命名为docker-ce。所以安装新版本，还是要配置下yum源的：这里强烈建议配置国内的，速度快。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e /]# yum-config-manager --add-repo https://mirrors.ustc.edu.cn/docker-ce/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure>
+<p>配置后， yum search docker-ce可以搜索到了。这时候就可以下载到指定位置：为了后续离线安装；</p>
+<h2 id="下载不安装：为了验证离线"><a href="#下载不安装：为了验证离线" class="headerlink" title="下载不安装：为了验证离线"></a>下载不安装：为了验证离线</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e /]# cd /usr/local</span><br><span class="line">[root@557a4e0c3e7e local]# mkdir yumrepo</span><br><span class="line">[root@557a4e0c3e7e local]# yum install --downloadonly --downloaddir=/usr/local/yumrepo/ docker-ce</span><br></pre></td></tr></table></figure>
+<h2 id="配置docker本地源"><a href="#配置docker本地源" class="headerlink" title="配置docker本地源"></a>配置docker本地源</h2><h3 id="建立索引"><a href="#建立索引" class="headerlink" title="建立索引"></a>建立索引</h3><p> 先安装本地repo索引创建工具，通过这个工具，建立索引：就是本地安装包所在目录下的repodata目录；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e yumrepo]# yum install createrepo -y</span><br><span class="line">[root@557a4e0c3e7e yumrepo]# createrepo /usr/local/yumrepo/</span><br></pre></td></tr></table></figure>
+<h3 id="创建源文件docker-repo"><a href="#创建源文件docker-repo" class="headerlink" title="创建源文件docker.repo"></a>创建源文件docker.repo</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e yumrepo]# cd /etc/yum.repos.d</span><br><span class="line">[root@557a4e0c3e7e yum.repos.d]# vi docker.repo</span><br><span class="line">[root@557a4e0c3e7e yum.repos.d]# more docker.repo </span><br><span class="line">[docker-yum]</span><br><span class="line">name=dockeryum</span><br><span class="line">baseurl=file:///usr/local/yumrepo</span><br><span class="line">enable=1</span><br><span class="line">gpgcheck=0</span><br></pre></td></tr></table></figure>
+<h2 id="模拟离线安装"><a href="#模拟离线安装" class="headerlink" title="模拟离线安装"></a>模拟离线安装</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum --disablerepo=\* --enablerepo=docker-yum install docker-ce -y</span><br></pre></td></tr></table></figure>
+<h2 id="验证安装成功"><a href="#验证安装成功" class="headerlink" title="验证安装成功"></a>验证安装成功</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e yum.repos.d]# docker -v</span><br><span class="line">Docker version 18.03.1-ce, build 9ee9f40</span><br></pre></td></tr></table></figure>
+<h3 id="启动dockerd，报错"><a href="#启动dockerd，报错" class="headerlink" title="启动dockerd，报错"></a>启动dockerd，报错</h3><p>这个是因为容器中又启动了Docker daemon。部分报错日志节选：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e /]# docker -v</span><br><span class="line">Docker version 18.03.1-ce, build 9ee9f40</span><br><span class="line">[root@557a4e0c3e7e /]# /usr/bin/dockerd </span><br><span class="line">...</span><br><span class="line">ERRO[0000] failed to change OOM score to -500            error="write /proc/53/oom_score_adj: permission denied" module=containerd</span><br><span class="line">...</span><br><span class="line">address="/var/run/docker/containerd/docker-containerd.sock" module="containerd/grpc"</span><br><span class="line">INFO[0000] containerd successfully booted in 0.029058s   module=containerd</span><br><span class="line">ERRO[2018-05-22T11:55:23.265326880Z] 'overlay2' is not supported over aufs        </span><br><span class="line">...</span><br><span class="line">WARN[2018-05-22T11:55:23.353577680Z] Running modprobe xt_conntrack failed with message: ``, error: exit status 1 </span><br><span class="line">Error starting daemon: Error initializing network controller: error obtaining controller instance: failed to create NAT chain DOCKER: iptables failed: iptables -t nat -N DOCKER: iptables v1.4.21: can't initialize iptables table `nat': Permission denied (you must be root)</span><br><span class="line">Perhaps iptables or your kernel needs to be upgraded.</span><br><span class="line"> (exit status 3)</span><br></pre></td></tr></table></figure>
+<h3 id="Copy资源出来"><a href="#Copy资源出来" class="headerlink" title="Copy资源出来"></a>Copy资源出来</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:Desktop kangcunhua$ docker cp dc18:/usr/local/yumrepo .</span><br><span class="line">ChinaDreams:Desktop kangcunhua$ docker cp dc18:/etc/yum.repos.d/docker.repo .</span><br></pre></td></tr></table></figure>
+<h2 id="结论-1"><a href="#结论-1" class="headerlink" title="结论"></a>结论</h2><ul>
+<li>验证离线安装Docker-CE思路成功；</li>
+<li>容器中仍旧无法启动Docker daemon；</li>
+</ul>
+<h1 id="内网离线实战"><a href="#内网离线实战" class="headerlink" title="内网离线实战"></a>内网离线实战</h1><p>copy资源到内网，通过ssh将依赖包传到服务器；</p>
+<h2 id="登录服务器"><a href="#登录服务器" class="headerlink" title="登录服务器"></a>登录服务器</h2><ul>
+<li>yumrepo放置到/usr/local/目录下</li>
+<li>docker.repo放置到/etc/yum.repo.d/目录下</li>
+<li>因为已经生成过索引了，所以无需再次运行create repo</li>
+</ul>
+<h2 id="验证docker本地源"><a href="#验证docker本地源" class="headerlink" title="验证docker本地源"></a>验证docker本地源</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# yum repolist #可以成功查看到docker-yum</span><br></pre></td></tr></table></figure>
+<h2 id="离线安装"><a href="#离线安装" class="headerlink" title="离线安装"></a>离线安装</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# yum --disablerepo=\* --enablerepo=docker-yum install docker-ce -y</span><br></pre></td></tr></table></figure>
+<p>报错，缺依赖包；docker-ce相关依赖包已经全了，只是有一些CentOS依赖的包版本比docker-ce低，内网系统可能优化精简“过”了，或基础软件不完整，导致这些低版本和高版本不能和谐共处；只能根据报错信息，去笔记本下载依赖；报错信息和分析详见文末：“附：依赖包冲突和解决”；</p>
+<h3 id="解决依赖"><a href="#解决依赖" class="headerlink" title="解决依赖"></a>解决依赖</h3><p>依旧是回到个人笔记本，联网下载依赖包：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:~ kangcunhua$ docker start dc7</span><br><span class="line">dc7</span><br><span class="line">[root@ce27b30d0d9e /]# yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br><span class="line">[root@ce27b30d0d9e /]# yum clean all</span><br><span class="line">[root@ce27b30d0d9e /]# yum makecache</span><br></pre></td></tr></table></figure>
+<p>共计尝试两次，使用如下命令，下载补全系统依赖包：</p>
+<table>
+<thead>
+<tr>
+<th><strong>编号</strong></th>
+<th><strong>命令</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo docker-ce</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo glibc-2.17-105.e</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo systemd-sysv</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo dracut-network</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libgudev1</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo dracut-config-rescue</td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo systemd-python</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libstdc++</td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo glibc-headers</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo pcre-devel</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo gcc-c++</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo glibc-devel</td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libtool-ltdl</td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libselinux-devel</td>
+</tr>
+<tr>
+<td><strong>15</strong></td>
+<td>repotrack -a x86_64 -p /usr/local/yumrepo libsepol-devel</td>
+</tr>
+</tbody>
+</table>
+<h3 id="笔记本上验证"><a href="#笔记本上验证" class="headerlink" title="笔记本上验证"></a>笔记本上验证</h3><p>保证这些依赖包，不会导致安装失败。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@ce27b30d0d9e /]# yum --disablerepo=\* --enablerepo=docker-yum install docker -y</span><br></pre></td></tr></table></figure>
+<h2 id="安装和配置用户权限"><a href="#安装和配置用户权限" class="headerlink" title="安装和配置用户权限"></a>安装和配置用户权限</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>将依赖包上传到内网服务器指定目录/usr/local/yumrepo ；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# yum --disablerepo=\* --enablerepo=docker-yum install docker-ce -y</span><br></pre></td></tr></table></figure>
+<p>没有报错！</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# docker -v</span><br><span class="line">Docker version 18.03.1-ce, build 9ee9f40</span><br></pre></td></tr></table></figure>
+<h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# systemctl start docker</span><br></pre></td></tr></table></figure>
+<p>搞定！</p>
+<h3 id="配置用户"><a href="#配置用户" class="headerlink" title="配置用户"></a>配置用户</h3><p>添加一个用户dev，专门管理docker。千万不要图省事，服务器上直接用root管理docker；容器可以；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# cat /etc/group</span><br><span class="line">[root@pma03 ~]# cat /etc/group | grep docker</span><br><span class="line">[root@pma03 ~]# more /etc/passwd</span><br><span class="line">[root@pma03 ~]# gpasswd -a dev docker</span><br><span class="line">[root@pma03 ~]# useradd -g docker dev</span><br><span class="line">[root@pma03 ~]# passwd dev</span><br><span class="line">[root@pma03 ~]# chmod -v u+w /etc/sudoers</span><br><span class="line">[root@pma03 ~]# vi /etc/sudoers</span><br><span class="line">[root@pma03 ~]# chomod -v u-w /etc/sudoers</span><br><span class="line">[root@pma03 ~]# systemctl restart docker</span><br><span class="line">[root@pma03 ~]# docker -v</span><br><span class="line">[root@pma03 ~]# docker info</span><br><span class="line">[root@pma03 ~]# su dev</span><br><span class="line">[dev@pma03 ~]#</span><br></pre></td></tr></table></figure>
+<h2 id="安装docker-compose"><a href="#安装docker-compose" class="headerlink" title="安装docker-compose"></a>安装docker-compose</h2><p>又被坑了：docker for Mac、docker for windows 安装完都自带docker-compose，linux版本的docker-ce居然不带。想起来离线安装各种坑就头大，网上查了半天<a href="https://www.jianshu.com/p/10d476c5ade1" target="_blank" rel="noopener">资料</a>，居然是个python工具，要先安装pip，o No！只好翻到github，看看能不能源码编译安装。结果看到有<a href="https://github.com/docker/compose/releases" target="_blank" rel="noopener">release的下载</a>，猜想可以直接使用。后来用下载后的文件百度，果然翻到一篇<a href="https://www.cnblogs.com/52fhy/p/5991344.html" target="_blank" rel="noopener">指南</a>，可以这样搞：</p>
+<blockquote>
+<p>方法四：离线安装</p>
+<p>下载docker-compose-Linux-x86_64，然后重新命名添加可执行权限即可：</p>
+</blockquote>
+<h3 id="笔记本验证先"><a href="#笔记本验证先" class="headerlink" title="笔记本验证先"></a>笔记本验证先</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:Desktop kangcunhua$ docker cp ./docker-compose-Linux-x86_64.dms dc18:/usr/local/bin/docker-compose</span><br></pre></td></tr></table></figure>
+<h3 id="进入容器"><a href="#进入容器" class="headerlink" title="进入容器"></a>进入容器</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@557a4e0c3e7e /]# cd /usr/local/bin/</span><br><span class="line">[root@557a4e0c3e7e bin]# ls</span><br><span class="line">docker-compose</span><br><span class="line">[root@557a4e0c3e7e bin]# chmod +x /usr/local/bin/docker-compose</span><br><span class="line">[root@557a4e0c3e7e bin]# docker-compose -v</span><br><span class="line">docker-compose version 1.21.2, build a133471</span><br></pre></td></tr></table></figure>
+<h2 id="内网安装docker-compose"><a href="#内网安装docker-compose" class="headerlink" title="内网安装docker-compose"></a>内网安装docker-compose</h2><p>同样把安装包copy进内网，ssh上传到服务器</p>
+<ul>
+<li>cp重命名到指定目录</li>
+<li>赋予执行权限</li>
+<li>赋予 dev:docker也有执行权限</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@pma03 ~]# cd /usr/local/bin/</span><br><span class="line">[root@pma03 bin]# cp /home/dev/docker-images/docker-compose-Linux-x86_64.dms docker-compose</span><br><span class="line">[root@pma03 bin]# chmod +x ./docker-compose</span><br><span class="line">[root@pma03 bin]# docker-compose -v</span><br><span class="line">[root@pma03 bin]# chown -R dev:docker ./docker-compose</span><br><span class="line">[root@pma03 bin]# su dev</span><br><span class="line">[dev@pma03 ~]# docker-compose -v</span><br></pre></td></tr></table></figure>
+<p>搞定！</p>
+<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>后续要做的事情就简单了：</p>
+<ul>
+<li>从笔记本上pull镜像，然后导出</li>
+<li>copy到内网上传到服务器，导入</li>
+<li>docker run起镜像</li>
+<li>docker-compose起多个镜像</li>
+</ul>
+<p>尽情happy吧！</p>
+<h1 id="附：依赖包冲突和分析"><a href="#附：依赖包冲突和分析" class="headerlink" title="附：依赖包冲突和分析"></a>附：依赖包冲突和分析</h1><p>内网离线安装碰上的依赖包问题和分析</p>
+<h2 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h2><p>yun install docker-ce时，提示有依赖包版本冲突or缺失；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">Error: Package: systemd-sysv-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd = 219-19.el7</span><br><span class="line">           Removing: systemd-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd = 219-19.el7</span><br><span class="line">           Updated By: systemd-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd = 219-42.el7_4.4</span><br><span class="line">Error: Package: dracut-network-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: dracut = 033-359.el7</span><br><span class="line">           Removing: dracut-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">               dracut = 033-359.el7</span><br><span class="line">           Updated By: dracut-033-502.el7.x86_64 (localyum)</span><br><span class="line">               dracut = 033-502.el7</span><br><span class="line">Error: Package: libgudev1-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd-libs = 219-19.el7</span><br><span class="line">           Removing: systemd-libs-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd-libs = 219-19.el7</span><br><span class="line">           Updated By: systemd-libs-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd-libs = 219-42.el7_4.4</span><br><span class="line">Error: Package: dracut-config-rescue-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: dracut = 033-359.el7</span><br><span class="line">           Removing: dracut-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">               dracut = 033-359.el7</span><br><span class="line">           Updated By: dracut-033-502.el7.x86_64 (localyum)</span><br><span class="line">               dracut = 033-502.el7</span><br><span class="line">Error: Package: systemd-python-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd = 219-19.el7</span><br><span class="line">           Removing: systemd-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd = 219-19.el7</span><br><span class="line">           Updated By: systemd-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd = 219-42.el7_4.4</span><br><span class="line"> You could try using --skip-broken to work around the problem</span><br><span class="line"> You could try running: rpm -Va --nofiles --nodigest</span><br></pre></td></tr></table></figure>
+<p>看到报错的时候，内心是崩溃的。最后还是收拾心情，逐一解决了。</p>
+<p>网上唯一可以找到的资料就是这篇<a href="https://segmentfault.com/q/1010000011984677" target="_blank" rel="noopener">离线安装docker包冲突</a>，报错信息一模一样，但是帖子没有给出确定的原因和解决办法；但是给予了我信心，确实不是因为CentOS7.2和Redhat7.2有底层不同，导致的这些错误，这样是无力解决的；后续解决完依赖后，我猜测原因是，甲方提供的Redhat或CentOS，默认软件包安装的有问题：做了一些精简“优化”处理不了部分依赖包冲突；</p>
+<p>后续找到了这篇文章：<a href="https://blog.csdn.net/xuyuzhuang1991/article/details/77482659" target="_blank" rel="noopener">CentOS7.2离线安装docker-ce最新版</a>，文中指出Docker需要的部分软件包版本要高于CentOS7；就是说同样的软件包，Docker依赖的高版本的，但是CentOS依赖低版本的；解决办法就是找到他们，全部安装上去；</p>
+<blockquote>
+<p>下载libgudev1和systemd-sysv，是因为centos7.2的libgudev1和systemd-sysv依赖systemd-219-19.el7.x86_64，而docker-ce需要systemd-219-30el7.x86_64.</p>
+</blockquote>
+<h2 id="再次尝试"><a href="#再次尝试" class="headerlink" title="再次尝试"></a>再次尝试</h2><p>repotrack -a x86_64解决上述依赖后（命令详见正文：<a href="### 解决依赖">解决依赖</a>），copy进内网，再次尝试安装Docker-CE。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Error: Package: systemd-sysv-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd = 219-19.el7</span><br><span class="line">           Removing: systemd-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd = 219-19.el7</span><br><span class="line">           Updated By: systemd-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd = 219-42.el7_4.4</span><br><span class="line">Error: Package: dracut-network-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: dracut = 033-359.el7</span><br><span class="line">           Removing: dracut-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">               dracut = 033-359.el7</span><br><span class="line">           Updated By: dracut-033-502.el7.x86_64 (localyum)</span><br><span class="line">               dracut = 033-502.el7</span><br><span class="line">Error: Package: libgudev1-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd-libs = 219-19.el7</span><br><span class="line">           Removing: systemd-libs-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd-libs = 219-19.el7</span><br><span class="line">           Updated By: systemd-libs-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd-libs = 219-42.el7_4.4</span><br><span class="line">Error: Package: dracut-config-rescue-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: dracut = 033-359.el7</span><br><span class="line">           Removing: dracut-033-359.el7.x86_64 (@anaconda)</span><br><span class="line">               dracut = 033-359.el7</span><br><span class="line">           Updated By: dracut-033-502.el7.x86_64 (localyum)</span><br><span class="line">               dracut = 033-502.el7</span><br><span class="line">Error: Package: systemd-python-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">           Requires: systemd = 219-19.el7</span><br><span class="line">           Removing: systemd-219-19.el7.x86_64 (@anaconda)</span><br><span class="line">               systemd = 219-19.el7</span><br><span class="line">           Updated By: systemd-219-42.el7_4.4.x86_64 (localyum)</span><br><span class="line">               systemd = 219-42.el7_4.4</span><br></pre></td></tr></table></figure>
+<p>解决办法就是继续回到笔记本联网下载这些依赖包；详见：“解决依赖”；</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><h2 id="直接安装rpm包"><a href="#直接安装rpm包" class="headerlink" title="直接安装rpm包"></a>直接安装rpm包</h2><blockquote>
+<p>可以的，直接敲“rpm -ivh 包名”但是有些rpm包是有依赖性的，可以在命令尾端添加“–force –nodeps”，“–force”指强制“，”–nodeps“指不查找依赖性</p>
+<p>比如”rpm -ivh *.rpm –force —nodeps“，同时，也可以使用yum命令，会自动解决包依赖的关系，能便于管理大量系统的更新问题，建议使用yum</p>
+</blockquote>
+<h2 id="容器特权–privileged"><a href="#容器特权–privileged" class="headerlink" title="容器特权–privileged"></a>容器特权–privileged</h2><blockquote>
+<p><strong>Runtime privilege, Linux capabilities, and LXC configuration</strong></p>
+<p>–cap-add : Add Linux capabilities</p>
+<p>–cap-drop : Drop Linux capabilities</p>
+<p>–privileged=false : Give extended privileges to this container</p>
+<p>–device=[] : Allows you to run devices inside the container without the –privileged flag.</p>
+<p>–lxc-conf=[] : (lxc exec-driver only) Add custom lxc options –lxc-conf=”lxc.cgroup.cpuset.cpus = 0,1”</p>
+<p>默认情况下，Docker的容器是没有特权的，例如不能在容器中再启动一个容器。这是因为默认情况下容器是不能访问任何其它设备的。但是通过”privileged”，容器就拥有了访问任何其它设备的权限。</p>
+</blockquote>
+<h3 id="我尝试了下，启动非常之慢：不推荐"><a href="#我尝试了下，启动非常之慢：不推荐" class="headerlink" title="我尝试了下，启动非常之慢：不推荐"></a>我尝试了下，启动非常之慢：不推荐</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:~ kangcunhua$ docker run -it --privileged --name dc99 sssllc/centos7.2-jdk1.8  /usr/sbin/init</span><br><span class="line"></span><br><span class="line">Welcome to CentOS Linux 7 (Core)!</span><br><span class="line"></span><br><span class="line">[  OK  ] Reached target Swap.</span><br><span class="line">[  OK  ] Created slice Root Slice.</span><br><span class="line">[  OK  ] Listening on udev Control Socket.</span><br><span class="line">[  OK  ] Reached target Encrypted Volumes.</span><br><span class="line">[  OK  ] Listening on udev Kernel Socket.</span><br><span class="line">[  OK  ] Listening on Delayed Shutdown Socket.</span><br><span class="line">[  OK  ] Listening on /dev/initctl Compatibility Named Pipe.</span><br><span class="line">[  OK  ] Reached target Remote File Systems.</span><br><span class="line">[  OK  ] Created slice User and Session Slice.</span><br><span class="line">[  OK  ] Created slice System Slice.</span><br><span class="line">[  OK  ] Created slice system-serial\x2dgetty.slice.</span><br><span class="line">[  OK  ] Reached target Slices.</span><br><span class="line">[  OK  ] Listening on Journal Socket.</span><br><span class="line">         Mounting Debug File System...</span><br><span class="line">         Starting Journal Service...</span><br><span class="line">         Mounting FUSE Control File System...</span><br><span class="line">         Starting Apply Kernel Variables...</span><br><span class="line">         Starting Create Static Device Nodes in /dev...</span><br><span class="line">         Mounting Huge Pages File System...</span><br><span class="line">         Starting Setup Virtual Console...</span><br><span class="line">[  OK  ] Created slice system-getty.slice.</span><br><span class="line">         Starting Remount Root and Kernel File Systems...</span><br><span class="line">[  OK  ] Reached target Paths.</span><br><span class="line">[  OK  ] Mounted FUSE Control File System.</span><br><span class="line">[  OK  ] Mounted Debug File System.</span><br><span class="line">[  OK  ] Mounted Huge Pages File System.</span><br><span class="line">[  OK  ] Started Apply Kernel Variables.</span><br><span class="line">[  OK  ] Started Setup Virtual Console.</span><br><span class="line">[  OK  ] Started Create Static Device Nodes in /dev.</span><br><span class="line">         Starting udev Kernel Device Manager...</span><br><span class="line">[  OK  ] Started Journal Service.</span><br><span class="line">[  OK  ] Started udev Kernel Device Manager.</span><br><span class="line">[FAILED] Failed to start Remount Root and Kernel File Systems.</span><br><span class="line">See 'systemctl status systemd-remount-fs.service' for details.</span><br><span class="line">[  OK  ] Reached target Local File Systems (Pre).</span><br><span class="line">         Starting Rebuild Hardware Database...</span><br><span class="line">         Starting Load/Save Random Seed...</span><br><span class="line">         Starting Flush Journal to Persistent Storage...</span><br><span class="line">[  OK  ] Reached target Local File Systems.</span><br><span class="line">         Starting Rebuild Journal Catalog...</span><br><span class="line">[  OK  ] Started Flush Journal to Persistent Storage.</span><br><span class="line">         Starting Create Volatile Files and Directories...</span><br><span class="line">[  OK  ] Started Load/Save Random Seed.</span><br><span class="line">[  OK  ] Started Rebuild Journal Catalog.</span><br><span class="line">[  OK  ] Started Create Volatile Files and Directories.</span><br><span class="line">         Starting Update UTMP about System Boot/Shutdown...</span><br><span class="line">[  OK  ] Started Update UTMP about System Boot/Shutdown.</span><br><span class="line">[  OK  ] Started Rebuild Hardware Database.</span><br><span class="line">         Starting udev Coldplug all Devices...</span><br><span class="line">         Starting Update is Completed...</span><br><span class="line">[  OK  ] Started Update is Completed.</span><br><span class="line">[  OK  ] Started udev Coldplug all Devices.</span><br><span class="line">[  OK  ] Reached target System Initialization.</span><br><span class="line">[  OK  ] Reached target Timers.</span><br><span class="line">[  OK  ] Listening on D-Bus System Message Bus Socket.</span><br><span class="line">[  OK  ] Reached target Sockets.</span><br><span class="line">[  OK  ] Reached target Basic System.</span><br><span class="line">         Starting LSB: Supports the direct execution of binary formats....</span><br><span class="line">         Starting Permit User Sessions...</span><br><span class="line">[  OK  ] Started D-Bus System Message Bus.</span><br><span class="line">         Starting D-Bus System Message Bus...</span><br><span class="line">         Starting Login Service...</span><br><span class="line">[  OK  ] Started Permit User Sessions.</span><br><span class="line">         Starting Cleanup of Temporary Directories...</span><br><span class="line">[  OK  ] Started Getty on tty1.</span><br><span class="line">         Starting Getty on tty1...</span><br><span class="line">[  OK  ] Started Cleanup of Temporary Directories.</span><br><span class="line">[  OK  ] Started Login Service.</span><br><span class="line">[  OK  ] Started LSB: Supports the direct execution of binary formats..</span><br><span class="line">[ TIME ] Timed out waiting for device dev-ttyS0.device.</span><br><span class="line">[DEPEND] Dependency failed for Serial Getty on ttyS0.</span><br><span class="line">[  OK  ] Reached target Login Prompts.</span><br><span class="line">[  OK  ] Reached target Multi-User System.</span><br><span class="line">         Starting Update UTMP about System Runlevel Changes...</span><br><span class="line">[  OK  ] Started Update UTMP about System Runlevel Changes.</span><br><span class="line">^C^C^C^C^C^Cc\c/</span><br></pre></td></tr></table></figure>
+<h2 id="CentOS-安装-Docker-CE"><a href="#CentOS-安装-Docker-CE" class="headerlink" title="CentOS 安装 Docker CE"></a>CentOS 安装 Docker CE</h2><p>参考<a href="https://yeasy.gitbooks.io/docker_practice/content/install/centos.html" target="_blank" rel="noopener">链接</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> sudo yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    https://mirrors.ustc.edu.cn/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line"><span class="meta">$</span> sudo yum-config-manager --enable docker-ce-edge</span><br><span class="line"><span class="meta">$</span> sudo yum makecache fast</span><br><span class="line"><span class="meta">$</span> sudo yum install docker-ce</span><br></pre></td></tr></table></figure>
+<h2 id="知识点rpm-ql-软件包"><a href="#知识点rpm-ql-软件包" class="headerlink" title="知识点rpm -ql 软件包"></a>知识点rpm -ql 软件包</h2><blockquote>
+<p>rpm -ql 软件包 查看安装的时候有哪些命令在PATH下，用这些命令去启动，这个是一种解决的方法</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@9c676d901d7b bin]# rpm -ql docker-ce</span><br><span class="line">/etc/udev/rules.d/80-docker.rules</span><br><span class="line">/usr/bin/docker</span><br><span class="line">/usr/bin/docker-containerd</span><br><span class="line">/usr/bin/docker-containerd-ctr</span><br><span class="line">/usr/bin/docker-containerd-shim</span><br><span class="line">/usr/bin/docker-init</span><br><span class="line">/usr/bin/docker-proxy</span><br><span class="line">/usr/bin/docker-runc</span><br><span class="line">/usr/bin/dockerd</span><br><span class="line">/usr/lib/systemd/system/docker.service</span><br><span class="line">/usr/share/bash-completion/completions/docker</span><br></pre></td></tr></table></figure>
+<p># </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/离线/" rel="tag"># 离线</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/centos7-2/" rel="tag"># centos7.2</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/19/O1-8-06-Docker快速验证保存iptables的转发策略/" rel="next" title="Docker快速验证保存iptables的转发策略">
+                <i class="fa fa-chevron-left"></i> Docker快速验证保存iptables的转发策略
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Kang.cunhua</p>
+              <p class="site-description motion-element" itemprop="description">从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#序"><span class="nav-number">1.</span> <span class="nav-text">序</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#吐槽避免采坑"><span class="nav-number">1.1.</span> <span class="nav-text">吐槽避免采坑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#第一周折腾无实质交付"><span class="nav-number">1.1.1.</span> <span class="nav-text">第一周折腾无实质交付</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第二周换Redhad7-2镜像"><span class="nav-number">1.1.2.</span> <span class="nav-text">第二周换Redhad7.2镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第三周寄希望于甲方提供的内网源"><span class="nav-number">1.1.3.</span> <span class="nav-text">第三周寄希望于甲方提供的内网源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第四周重整旗鼓"><span class="nav-number">1.1.4.</span> <span class="nav-text">第四周重整旗鼓</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#采坑记"><span class="nav-number">1.2.</span> <span class="nav-text">采坑记</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#几个搞定依赖包的有用命令"><span class="nav-number">1.2.1.</span> <span class="nav-text">几个搞定依赖包的有用命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思路：先验证再服务器落地"><span class="nav-number">1.3.</span> <span class="nav-text">思路：先验证再服务器落地</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装docker"><span class="nav-number">2.</span> <span class="nav-text">安装docker</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#内网Linux基础依赖"><span class="nav-number">2.1.</span> <span class="nav-text">内网Linux基础依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境模拟"><span class="nav-number">2.2.</span> <span class="nav-text">环境模拟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#拉取镜像，创建repo目录"><span class="nav-number">2.2.1.</span> <span class="nav-text">拉取镜像，创建repo目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#下载所需离线包"><span class="nav-number">2.2.2.</span> <span class="nav-text">下载所需离线包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装createrepo"><span class="nav-number">2.2.3.</span> <span class="nav-text">安装createrepo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建docker-repo"><span class="nav-number">2.2.4.</span> <span class="nav-text">新建docker.repo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成repo索引"><span class="nav-number">2.2.5.</span> <span class="nav-text">生成repo索引</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装docker并验证"><span class="nav-number">2.3.</span> <span class="nav-text">安装docker并验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#尝试启动Hello-world"><span class="nav-number">2.3.1.</span> <span class="nav-text">尝试启动Hello-world</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动docker守护进程"><span class="nav-number">2.3.2.</span> <span class="nav-text">启动docker守护进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#直接运行-usr-bin-dockerd"><span class="nav-number">2.3.3.</span> <span class="nav-text">直接运行/usr/bin/dockerd</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">2.4.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装Docker-CE"><span class="nav-number">3.</span> <span class="nav-text">安装Docker-CE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#下载centos7-2基础镜像"><span class="nav-number">3.1.</span> <span class="nav-text">下载centos7.2基础镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置docker-ce源"><span class="nav-number">3.2.</span> <span class="nav-text">配置docker-ce源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#下载不安装：为了验证离线"><span class="nav-number">3.3.</span> <span class="nav-text">下载不安装：为了验证离线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置docker本地源"><span class="nav-number">3.4.</span> <span class="nav-text">配置docker本地源</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#建立索引"><span class="nav-number">3.4.1.</span> <span class="nav-text">建立索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建源文件docker-repo"><span class="nav-number">3.4.2.</span> <span class="nav-text">创建源文件docker.repo</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模拟离线安装"><span class="nav-number">3.5.</span> <span class="nav-text">模拟离线安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#验证安装成功"><span class="nav-number">3.6.</span> <span class="nav-text">验证安装成功</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动dockerd，报错"><span class="nav-number">3.6.1.</span> <span class="nav-text">启动dockerd，报错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Copy资源出来"><span class="nav-number">3.6.2.</span> <span class="nav-text">Copy资源出来</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论-1"><span class="nav-number">3.7.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#内网离线实战"><span class="nav-number">4.</span> <span class="nav-text">内网离线实战</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#登录服务器"><span class="nav-number">4.1.</span> <span class="nav-text">登录服务器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#验证docker本地源"><span class="nav-number">4.2.</span> <span class="nav-text">验证docker本地源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#离线安装"><span class="nav-number">4.3.</span> <span class="nav-text">离线安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解决依赖"><span class="nav-number">4.3.1.</span> <span class="nav-text">解决依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#笔记本上验证"><span class="nav-number">4.3.2.</span> <span class="nav-text">笔记本上验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装和配置用户权限"><span class="nav-number">4.4.</span> <span class="nav-text">安装和配置用户权限</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">4.4.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">4.4.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动服务"><span class="nav-number">4.4.3.</span> <span class="nav-text">启动服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置用户"><span class="nav-number">4.4.4.</span> <span class="nav-text">配置用户</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装docker-compose"><span class="nav-number">4.5.</span> <span class="nav-text">安装docker-compose</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#笔记本验证先"><span class="nav-number">4.5.1.</span> <span class="nav-text">笔记本验证先</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进入容器"><span class="nav-number">4.5.2.</span> <span class="nav-text">进入容器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内网安装docker-compose"><span class="nav-number">4.6.</span> <span class="nav-text">内网安装docker-compose</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#后续"><span class="nav-number">5.</span> <span class="nav-text">后续</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附：依赖包冲突和分析"><span class="nav-number">6.</span> <span class="nav-text">附：依赖包冲突和分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#报错"><span class="nav-number">6.1.</span> <span class="nav-text">报错</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#再次尝试"><span class="nav-number">6.2.</span> <span class="nav-text">再次尝试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#直接安装rpm包"><span class="nav-number">7.1.</span> <span class="nav-text">直接安装rpm包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#容器特权–privileged"><span class="nav-number">7.2.</span> <span class="nav-text">容器特权–privileged</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#我尝试了下，启动非常之慢：不推荐"><span class="nav-number">7.2.1.</span> <span class="nav-text">我尝试了下，启动非常之慢：不推荐</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CentOS-安装-Docker-CE"><span class="nav-number">7.3.</span> <span class="nav-text">CentOS 安装 Docker CE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#知识点rpm-ql-软件包"><span class="nav-number">7.4.</span> <span class="nav-text">知识点rpm -ql 软件包</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kang.cunhua</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

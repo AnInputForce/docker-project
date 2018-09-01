@@ -1,0 +1,22 @@
+version: '2'
+services:
+    web:
+      image: 'registry.cn-hangzhou.aliyuncs.com/lab99/gitlab-ce-zh:latest'
+      restart: always
+      hostname: '127.0.0.1'
+      environment:
+        GITLAB_OMNIBUS_CONFIG: |
+          external_url 'http://127.0.0.1'
+          # Add any other gitlab.rb configuration here, each on its own line
+      ports:
+        - '80:80'
+        - '443:443'
+        - '22:22'
+      volumes:
+        - config:/etc/gitlab
+        - data:/var/opt/gitlab
+        - logs:/var/log/gitlab
+volumes:
+    config: {}
+    data: {}
+    logs: {}

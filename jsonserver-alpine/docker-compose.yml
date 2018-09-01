@@ -1,0 +1,11 @@
+version: "9.1"
+services:
+  json-server:
+    image: node:alpine
+    container_name: json-server
+    restart: always
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 20000:20000
+    command: "node server.js"

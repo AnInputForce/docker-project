@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="阅读建议先通读全文后，再自行决定需要实践的步骤。后文总是有更简洁更快更好的实践。 不过，新人建议从头到尾实践，也不失为“笨办法学Docker”的美谈一桩。 本文思路： 12345直接拉取Mariadb镜像，搭建数据库手动Build Django镜像：	以python2.7为基础镜像	让我们做的更好：以Python2.7-slim为基础镜像的优化	&quot;docker -v&quot;&amp;amp;&amp;amp;&quot;dock">
+<meta name="keywords" content="docker,Django,Mariadb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker搭建Django+Mariadb环境">
+<meta property="og:url" content="http://opsdev.fun/2017/07/17/O1-8-02-Docker搭建Django-Mariadb环境/index.html">
+<meta property="og:site_name" content="AnInputForce">
+<meta property="og:description" content="阅读建议先通读全文后，再自行决定需要实践的步骤。后文总是有更简洁更快更好的实践。 不过，新人建议从头到尾实践，也不失为“笨办法学Docker”的美谈一桩。 本文思路： 12345直接拉取Mariadb镜像，搭建数据库手动Build Django镜像：	以python2.7为基础镜像	让我们做的更好：以Python2.7-slim为基础镜像的优化	&quot;docker -v&quot;&amp;amp;&amp;amp;&quot;dock">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-17T06:58:26.354Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker搭建Django+Mariadb环境">
+<meta name="twitter:description" content="阅读建议先通读全文后，再自行决定需要实践的步骤。后文总是有更简洁更快更好的实践。 不过，新人建议从头到尾实践，也不失为“笨办法学Docker”的美谈一桩。 本文思路： 12345直接拉取Mariadb镜像，搭建数据库手动Build Django镜像：	以python2.7为基础镜像	让我们做的更好：以Python2.7-slim为基础镜像的优化	&quot;docker -v&quot;&amp;amp;&amp;amp;&quot;dock">
+
+
+
+
+
+
+  <link rel="canonical" href="http://opsdev.fun/2017/07/17/O1-8-02-Docker搭建Django-Mariadb环境/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Docker搭建Django+Mariadb环境 | AnInputForce</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnInputForce</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">蛮大人讲故事系列</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://opsdev.fun/2017/07/17/O1-8-02-Docker搭建Django-Mariadb环境/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kang.cunhua">
+      <meta itemprop="description" content="从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnInputForce">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker搭建Django+Mariadb环境
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-07-17 14:47:00" itemprop="dateCreated datePublished" datetime="2017-07-17T14:47:00+08:00">2017-07-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-06-17 14:58:26" itemprop="dateModified" datetime="2018-06-17T14:58:26+08:00">2018-06-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/diary/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="阅读建议"><a href="#阅读建议" class="headerlink" title="阅读建议"></a>阅读建议</h1><p>先通读全文后，再自行决定需要实践的步骤。后文总是有更简洁更快更好的实践。</p>
+<p>不过，新人建议从头到尾实践，也不失为“笨办法学Docker”的美谈一桩。</p>
+<p>本文思路：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">直接拉取Mariadb镜像，搭建数据库</span><br><span class="line">手动Build Django镜像：</span><br><span class="line">	以python2.7为基础镜像</span><br><span class="line">	让我们做的更好：以Python2.7-slim为基础镜像的优化</span><br><span class="line">	"docker -v"&amp;&amp;"docker --link"</span><br></pre></td></tr></table></figure>
+<p>源码：<a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a>:AnInputForce/autodepopy.git</p>
+<p>基本上是边学边实验，关键步骤都有commit。请各位参考。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="环境之“Docker-Mariadb”搭建"><a href="#环境之“Docker-Mariadb”搭建" class="headerlink" title="环境之“Docker-Mariadb”搭建"></a>环境之“Docker-Mariadb”搭建</h2><p>参考：在Mac中直接安装Maridb（不推荐），<a href="http://www.jb51.net/article/93202.htm" target="_blank" rel="noopener">Mac中MariaDB数据库的安装步骤</a></p>
+<p>首先，把你的宿主机mac或linux装上tree命令。没有也没关系，下文有相关的换成ls即可；</p>
+<h3 id="下载Mariadb数据库镜像"><a href="#下载Mariadb数据库镜像" class="headerlink" title="下载Mariadb数据库镜像"></a>下载Mariadb数据库镜像</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull mariadb</span><br></pre></td></tr></table></figure>
+<h3 id="启动并配置DB"><a href="#启动并配置DB" class="headerlink" title="启动并配置DB"></a>启动并配置DB</h3><ul>
+<li>映射数据库数据文件和配置文件<ul>
+<li>新建~/mariadb/data 、~/mariadb/custom目录</li>
+<li>-v ~/mariadb/data:/var/lib/mysql 映射数据文件出来</li>
+<li>-v ~/mariadb/custom:/etc/mysql/conf.d 映射配置文件出来</li>
+<li>指定数据库编码utf8mb4，参考：<a href="http://www.cnblogs.com/xiangcaiduoyidian/p/6210037.html" target="_blank" rel="noopener">mysql使用utf8mb4经验吐血总结</a></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> mkdir -p ~/mariadb/data ~/mariadb/custom</span><br><span class="line"><span class="meta">$</span> docker run --name my-mariadb -v ~/mariadb/data:/var/lib/mysql   -v ~/mariadb/custom:/etc/mysql/conf.d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=1q2w -d mariadb:latest --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci</span><br></pre></td></tr></table></figure>
+<h3 id="测试验证"><a href="#测试验证" class="headerlink" title="测试验证"></a>测试验证</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> docker ps</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES</span><br><span class="line">77de3a6bf3fe        mariadb:latest      "docker-entrypoint..."   2 minutes ago       Up About a minute   0.0.0.0:3306-&gt;3306/tcp   my-mariadb</span><br><span class="line"><span class="meta">$</span> docker exec -it my-mariadb bash</span><br><span class="line">root@77de3a6bf3fe:/# mysql -uroot -p1q2w</span><br><span class="line">Welcome to the MariaDB monitor.  Commands end with ; or \g.</span><br><span class="line">....</span><br><span class="line">MariaDB [(none)]&gt; show databases;</span><br><span class="line">+--------------------+</span><br><span class="line">| Database           |</span><br><span class="line">+--------------------+</span><br><span class="line">| information_schema |</span><br><span class="line">| mysql              |</span><br><span class="line">| performance_schema |</span><br><span class="line">+--------------------+</span><br><span class="line">3 rows in set (0.02 sec)</span><br></pre></td></tr></table></figure>
+<h2 id="环境之“Docker-Django”搭建"><a href="#环境之“Docker-Django”搭建" class="headerlink" title="环境之“Docker-Django”搭建"></a>环境之“Docker-Django”搭建</h2><p>很意外，翻了翻官方hub 镜像，有如下提示：</p>
+<blockquote>
+<p>This image is officially deprecated in favor of <a href="https://hub.docker.com/_/python/" target="_blank" rel="noopener">the standard <code>python</code> image</a>;</p>
+</blockquote>
+<p>大致意思是：这个镜像已被标准python镜像取代。该镜像不能直接带来Django环境，仅有的价值是提供一些Django依赖如mysql-client等。或许因为Django是APP级的，依赖于Project的requirements.txt，like this：</p>
+<p>只能自己动手，丰衣足食了。正好练练刚学习到的知识。</p>
+<h3 id="准备项目目录"><a href="#准备项目目录" class="headerlink" title="准备项目目录"></a>准备项目目录</h3><ul>
+<li>workspace 工作空间，所有项目大本营：自己习惯</li>
+<li>autodeploy 自动部署项目的目录：自己习惯</li>
+<li>z-dev 存放开发环境dockerfile及相关信息：自己习惯</li>
+<li>z-pub 存放生产环境dockerfile及相关信息：自己习惯</li>
+<li>.dockerignore 存放不被镜像build时关注的文件：来自Vscode。linux下不可见，具体内容详见此项目github；</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> mkdir -p ~/workspace/autodeploy &amp;&amp; cd ~/workspace/autodeploy &amp;&amp; mkdir z-dev z-pub</span><br></pre></td></tr></table></figure>
+<h3 id="创建Dockerfile"><a href="#创建Dockerfile" class="headerlink" title="创建Dockerfile"></a>创建Dockerfile</h3><p>直接使用Python2.7基础镜像，简单粗暴省事，适合想快速体验的孩子：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基础镜像</span></span><br><span class="line"><span class="keyword">FROM</span> python:<span class="number">2.7</span></span><br><span class="line"><span class="comment"># 维护者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> kang.cunhua &lt;kangcunhua@git.com.cn&gt; </span><br><span class="line"><span class="comment"># app 所在目录</span></span><br><span class="line"><span class="keyword">WORKDIR</span> /usr/local/web</span><br><span class="line">ADD . /usr/local/web/</span><br><span class="line"># 安装 app 所需依赖</span><br><span class="line">RUN pip install --no-cache-dir -r requirements.txt</span><br></pre></td></tr></table></figure>
+<h3 id="创建requirements-txt"><a href="#创建requirements-txt" class="headerlink" title="创建requirements.txt"></a>创建requirements.txt</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Django==1.11.3</span><br><span class="line">MySQL-python</span><br></pre></td></tr></table></figure>
+<h3 id="宿主机当前目录结构"><a href="#宿主机当前目录结构" class="headerlink" title="宿主机当前目录结构"></a>宿主机当前目录结构</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:autodeploy kangcunhua$ tree</span><br><span class="line">.</span><br><span class="line">├── readme.md</span><br><span class="line">├── z-dev</span><br><span class="line">│   ├── Dockerfile</span><br><span class="line">│   └── requirements.txt</span><br><span class="line">└── z-pub</span><br><span class="line">    └── Dockerfile</span><br><span class="line"></span><br><span class="line">2 directories, 4 files</span><br></pre></td></tr></table></figure>
+<h3 id="Build镜像"><a href="#Build镜像" class="headerlink" title="Build镜像"></a>Build镜像</h3><p>当前目录：~\workspace\autodeploy</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd z-dev &amp;&amp; docker build -t mydjango:latest .</span><br></pre></td></tr></table></figure>
+<h3 id="查看镜像"><a href="#查看镜像" class="headerlink" title="查看镜像"></a>查看镜像</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker images</span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">mydjango            latest              90a25c587400        23 seconds ago      699MB</span><br></pre></td></tr></table></figure>
+<h3 id="启动运行-amp-进入容器"><a href="#启动运行-amp-进入容器" class="headerlink" title="启动运行&amp;进入容器"></a>启动运行&amp;进入容器</h3><p>后台启动：-d 参数，不加就进入bash交互界面了。此处为演示，先run -d后台，再exec进入；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker run --name web -it -p 8000:8000 -d mydjango /bin/bash</span><br><span class="line">0b0e757708c29d0aa1799c14b6cd1f19a48e7cd748223064a0ab9205432ed23a</span><br><span class="line">ChinaDreams:z-dev kangcunhua$ docker exec -it web /bin/bash</span><br><span class="line">root@9326b308aacd:/usr/local/web#</span><br></pre></td></tr></table></figure>
+<h3 id="清理和验证环境"><a href="#清理和验证环境" class="headerlink" title="清理和验证环境"></a>清理和验证环境</h3><p>清理多余文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@9326b308aacd:/usr/local/web# ls</span><br><span class="line">requirements.txt</span><br><span class="line">root@9326b308aacd:/usr/local/web# rm *</span><br></pre></td></tr></table></figure>
+<p>验证</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@9326b308aacd:/usr/local/web# python --version</span><br><span class="line">Python 2.7.13</span><br><span class="line">root@9326b308aacd:/usr/local/web# python -m django --version</span><br><span class="line">1.11.3</span><br></pre></td></tr></table></figure>
+<h3 id="脚手架生成项目-启动web服务"><a href="#脚手架生成项目-启动web服务" class="headerlink" title="脚手架生成项目,启动web服务"></a>脚手架生成项目,启动web服务</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@26ad1dfb070f:/usr/web# django-admin startproject autodeploy</span><br><span class="line">root@26ad1dfb070f:/usr/web# cd autodeploy &amp;&amp; python manage.py runserver 0:8000</span><br></pre></td></tr></table></figure>
+<h3 id="浏览器访问"><a href="#浏览器访问" class="headerlink" title="浏览器访问"></a>浏览器访问</h3><p><a href="http://localhost:8000,不出意外，你可以看到传说中的Django欢迎页面：" target="_blank" rel="noopener">http://localhost:8000,不出意外，你可以看到传说中的Django欢迎页面：</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">It worked!</span><br><span class="line">Congratulations on your first Django-powered page.</span><br></pre></td></tr></table></figure>
+<h3 id="把项目框架copy出来"><a href="#把项目框架copy出来" class="headerlink" title="把项目框架copy出来"></a>把项目框架copy出来</h3><p>CONTROL-C退出webserver；然后退出容器：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">root@9326b308aacd:/usr/local/web/autodeploy# exit</span><br><span class="line">exit</span><br><span class="line">ChinaDreams:z-dev kangcunhua$ cd ~/workspace &amp;&amp; docker cp web:/usr/local/web/autodeploy . &amp;&amp; cd autodeploy &amp;&amp; rm -rf db.sqlite3 &amp;&amp; tree</span><br><span class="line">.</span><br><span class="line">├── autodeploy</span><br><span class="line">│   ├── __init__.py</span><br><span class="line">│   ├── __init__.pyc</span><br><span class="line">│   ├── settings.py</span><br><span class="line">│   ├── settings.pyc</span><br><span class="line">│   ├── urls.py</span><br><span class="line">│   ├── urls.pyc</span><br><span class="line">│   ├── wsgi.py</span><br><span class="line">│   └── wsgi.pyc</span><br><span class="line">├── manage.py</span><br><span class="line">├── readme.md</span><br><span class="line">├── z-dev</span><br><span class="line">│   ├── Dockerfile</span><br><span class="line">│   └── requirements.txt</span><br><span class="line">└── z-pub</span><br><span class="line">    └── Dockerfile</span><br><span class="line"></span><br><span class="line">3 directories, 13 files</span><br></pre></td></tr></table></figure>
+<h3 id="删除容器web"><a href="#删除容器web" class="headerlink" title="删除容器web"></a>删除容器web</h3><p>到此为止，此容器使命已经完成:生成项目初始化目录，删了即可；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:autodeploy kangcunhua$ docker stop web &amp;&amp; docker rm web</span><br></pre></td></tr></table></figure>
+<h3 id="新启容器web，挂载本地目录"><a href="#新启容器web，挂载本地目录" class="headerlink" title="新启容器web，挂载本地目录"></a>新启容器web，挂载本地目录</h3><p>本地目录优先覆盖容器目录，然后就实时同步了。PS：所以一开始想把容器内某目录挂载出来，比较难。不如先copy出来，清空。然后从本地挂载上去。</p>
+<p>“run -d”后台启动，exec执行命令启动web server</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:autodeploy kangcunhua$  docker run --name web -d -it -p 8000:8000 -v ~/workspace:/usr/local/web  mydjango /bin/bash</span><br><span class="line">2bf0f6d17f1d103a37a7992393e1f97483034cdadb01df6cf49ab4e1d8746f62</span><br><span class="line">ChinaDreams:autodeploy kangcunhua$ docker exec -it web /bin/bash -c "cd autodeploy&amp;&amp;python manage.py runserver 0:8000"</span><br></pre></td></tr></table></figure>
+<h3 id="运行，收获Django欢迎界面"><a href="#运行，收获Django欢迎界面" class="headerlink" title="运行，收获Django欢迎界面"></a>运行，收获Django欢迎界面</h3><p><a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">It worked!</span><br><span class="line">Congratulations on your first Django-powered page.</span><br></pre></td></tr></table></figure>
+<p>欢庆吧，少年！</p>
+<h1 id="让我们做的更好"><a href="#让我们做的更好" class="headerlink" title="让我们做的更好"></a>让我们做的更好</h1><h2 id="需要清醒的是，还有以下问题"><a href="#需要清醒的是，还有以下问题" class="headerlink" title="需要清醒的是，还有以下问题"></a>需要清醒的是，还有以下问题</h2><ul>
+<li>我们此时还未使用到Mariadb，默认使用的是SqlLite数据库。接下来我们看看，从web容器中如何访问数据库；</li>
+<li>我们默认使用的是Python的基础库，安装完django体积达到了惊人的近700M。</li>
+<li>在docker pull安装镜像时，简直是龟速：由于众所周知的原因</li>
+<li>在pip install 安装python模块是，也和龟速差不多了：由于众所周知的原因</li>
+<li>我们能不能做的更好？答案是，必须能！</li>
+</ul>
+<h2 id="改进我们的Dockerfile"><a href="#改进我们的Dockerfile" class="headerlink" title="改进我们的Dockerfile"></a>改进我们的Dockerfile</h2><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基础镜像</span></span><br><span class="line"><span class="keyword">FROM</span> python:<span class="number">2.7</span>-slim</span><br><span class="line"><span class="comment"># 维护者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> kang.cunhua &lt;kangcunhua@git.com.cn&gt; </span><br><span class="line"><span class="comment"># app 所在目录</span></span><br><span class="line"><span class="keyword">WORKDIR</span> /usr/src/web</span><br><span class="line">ADD . /usr/src/web</span><br><span class="line"># 安装 app 所需依赖,做一些清理工作</span><br><span class="line">RUN	buildDeps='gcc'; \ </span><br><span class="line">	deveDeps='mysql-client'; \ </span><br><span class="line">	set -x \</span><br><span class="line">	&amp;&amp; cp /etc/apt/sources.list /etc/apt/sources.list.backup \</span><br><span class="line">	&amp;&amp; mv sources.list /etc/apt/sources.list \</span><br><span class="line">	&amp;&amp; apt-get update &amp;&amp; apt-get install -y libmysqlclient-dev $buildDeps $deveDeps \</span><br><span class="line">	# When using Python 2.7, please install IPython 5.x LTS Long Term Support version.</span><br><span class="line">	&amp;&amp; pip install --no-cache-dir -r requirements.txt ipython==5.4.1 \</span><br><span class="line">	-i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com  \</span><br><span class="line">	&amp;&amp; rm -rf requirements.txt \</span><br><span class="line">	# 移除gcc</span><br><span class="line">	&amp;&amp; apt-get purge -y --auto-remove $buildDeps</span><br></pre></td></tr></table></figure>
+<p>注释已经不少了，对于新增的内容，还有些解释如下：</p>
+<h3 id="python-2-7-slim"><a href="#python-2-7-slim" class="headerlink" title="python:2.7-slim"></a>python:2.7-slim</h3><p>改用更小的slim镜像。一是减小构建镜像大小，二是可以从精简版折腾开始，复习巩固Dockerfile的知识。</p>
+<p>比对下前后两个构建完毕的镜像打下，安装了一大堆工具，镜像减小了1/2的体积。之所以第二个镜像repository:tag都为none，是因为我们这次打包的镜像也使用了mydjango:latest。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker images</span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">mydjango            latest              8fee1723a96c        2 minutes ago       355MB</span><br><span class="line">&lt;none&gt;              &lt;none&gt;              90a25c587400        About an hour ago   699MB</span><br></pre></td></tr></table></figure>
+<h3 id="sources-list"><a href="#sources-list" class="headerlink" title="sources.list"></a>sources.list</h3><p>python的镜像使用的Debian，版本是jessie。找到了国内阿里云的加速镜像。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deb http://mirrors.aliyun.com/debian/ jessie main non-free contrib</span><br><span class="line">deb http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib</span><br><span class="line">deb-src http://mirrors.aliyun.com/debian/ jessie main non-free contrib</span><br><span class="line">deb-src http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib</span><br></pre></td></tr></table></figure>
+<h3 id="mirrors-aliyun-com"><a href="#mirrors-aliyun-com" class="headerlink" title="mirrors.aliyun.com"></a>mirrors.aliyun.com</h3><p>同样使用的是阿里云的python pip源，安装时指定阿里云的源，并信任即可即可：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com</span><br></pre></td></tr></table></figure>
+<h3 id="安装mysql-client"><a href="#安装mysql-client" class="headerlink" title="安装mysql-client"></a>安装mysql-client</h3><p>是因为“python manage.py dbshell”命令需要。此命令可以方便操作数据库，并自动加载了一些环境变量；开发环境还是用得到的；生成环境可以移除；若不安装，执行命令<code>python manage.py dbshell</code>时，会提示 </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CommandError: You appear not to have the 'mysql' program installed or on your path.</span><br></pre></td></tr></table></figure>
+<h3 id="安装和卸载gcc"><a href="#安装和卸载gcc" class="headerlink" title="安装和卸载gcc"></a>安装和卸载gcc</h3><p>因为MySQL-python的安装依赖gcc。网上也有说安装MySQL-devel包就能解决，暂不需要，也有提示把这些python-devel mysql-devel zlib-devel openssl-devel，都安装上就好了，太多了。只安装gcc，用完之后再卸载即可。</p>
+<p>不安装gcc在build时编译MySQL-python报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">unable to execute &apos;gcc&apos;: No such file or directory</span><br><span class="line">error: command &apos;gcc&apos; failed with exit status 1</span><br></pre></td></tr></table></figure>
+<h3 id="安装ipython-5-4-1"><a href="#安装ipython-5-4-1" class="headerlink" title="安装ipython==5.4.1"></a>安装ipython==5.4.1</h3><p>是因为“python manage.py shell”进入交互式命令行会用到。不安装不方便。如果你安装了ipython 会自动用它们的界面。ipython是一套增强交互式Shell，用过的都说好；当然：生产环境可以不用安装。</p>
+<h2 id="开始重新构建"><a href="#开始重新构建" class="headerlink" title="开始重新构建"></a>开始重新构建</h2><h3 id="准备：创建数据库"><a href="#准备：创建数据库" class="headerlink" title="准备：创建数据库"></a>准备：创建数据库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:autodeploy kangcunhua$ docker exec -d my-mariadb mysql -uroot -p1q2w -e &quot;create database mydeploy;&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="准备：修改DB配置"><a href="#准备：修改DB配置" class="headerlink" title="准备：修改DB配置"></a>准备：修改DB配置</h3><p>删除db.sqlite3,之前虽然copy时删除了，但是运行webserver时默认配置的还是sqlite3，所以又生成了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/workspace/autodeploy &amp;&amp; rm db.sqlite3</span><br></pre></td></tr></table></figure>
+<p>进入web容器，修改/autodeploy/autodeploy/settings.py中DATABASES配置:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it web /bin/bash</span><br></pre></td></tr></table></figure>
+<p>因为我们已经做了本地映射，直接用Vscode修改对应配置文件也是有效的；</p>
+<p>注意’HOST’: ‘db’中，db就是我们在link中配置的别名。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">DATABASES = &#123;  </span><br><span class="line">    'default': &#123;  </span><br><span class="line">        'ENGINE': 'django.db.backends.mysql',  </span><br><span class="line">        'NAME': 'mydeploy',  </span><br><span class="line">        'USER': 'root',  </span><br><span class="line">        'PASSWORD': '1q2w',  </span><br><span class="line">        'HOST': 'db',  </span><br><span class="line">        'PORT': '3306',  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Build镜像-1"><a href="#Build镜像-1" class="headerlink" title="Build镜像"></a>Build镜像</h3><p>当前目录：~\workspace\autodeploy</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd z-dev &amp;&amp; docker build -t mydjango:latest .</span><br></pre></td></tr></table></figure>
+<h3 id="查看镜像-1"><a href="#查看镜像-1" class="headerlink" title="查看镜像"></a>查看镜像</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker images</span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">mydjango            latest              90a25c587400        23 seconds ago      699MB</span><br></pre></td></tr></table></figure>
+<h2 id="Web容器访问Mariadb数据库"><a href="#Web容器访问Mariadb数据库" class="headerlink" title="Web容器访问Mariadb数据库"></a>Web容器访问Mariadb数据库</h2><p>这时，就不得不提“–link”命令的使用了：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">—link name:alias</span><br></pre></td></tr></table></figure>
+<p>name是我们连接容器的名字,alias是link的别名。比如我们连接了数据库容器的web容器，就可以拿alias来配置数据库连接了。见下文：我们在启动容器时link数据库：</p>
+<p>不加这个link，你在web容器中，是连不上127.0.0.1:3306的。即使暴露了3306端口；</p>
+<h3 id="后台启动数据库-d"><a href="#后台启动数据库-d" class="headerlink" title="后台启动数据库(-d)"></a>后台启动数据库(-d)</h3><p>此时我们数据库应该是启动的，如果docker ps发现没有启动，没关系，敲如下命令启动：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name my-mariadb -v ~/mariadb/data:/var/lib/mysql   -v ~/mariadb/custom:/etc/mysql/conf.d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=1q2w -d mariadb:latest --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci</span><br></pre></td></tr></table></figure>
+<p>为项目创建数据库mydeploy，如果有错误，先查日志</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker exec -d my-mariadb mysql -uroot -p1q2w -e "create database mydeploy;" </span><br><span class="line">docker logs my-mariadb</span><br></pre></td></tr></table></figure>
+<h3 id="启动web容器link数据库容器"><a href="#启动web容器link数据库容器" class="headerlink" title="启动web容器link数据库容器"></a>启动web容器link数据库容器</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run --name web  --link=my-mariadb:db -it -p 8000:8000 -v ~/workspace:/usr/src/web  -d mydjango:latest /bin/bash </span><br><span class="line">e309fd9e718faf6629ce668860d5c9392c52da4f649f4307abf632a15b67285c</span><br></pre></td></tr></table></figure>
+<h3 id="验证环境命令"><a href="#验证环境命令" class="headerlink" title="验证环境命令"></a>验证环境命令</h3><p>分别是：检查python版本、检查django版本、进入dbshell操作数据库、进入ipython；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python --version</span><br><span class="line">python manage.py -m django --version</span><br><span class="line">./manage.py dbshell</span><br><span class="line">./manage.py shell</span><br></pre></td></tr></table></figure>
+<h3 id="创建管理员"><a href="#创建管理员" class="headerlink" title="创建管理员"></a>创建管理员</h3><p>先migrate数据库，在创建管理员</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker exec -it web /bin/bash</span><br><span class="line">root@e309fd9e718f:/usr/src/web# cd autodeploy/</span><br><span class="line">root@e309fd9e718f:/usr/src/web/autodeploy# python manage.py migrate</span><br><span class="line">root@e309fd9e718f:/usr/src/web/autodeploy# python manage.py createsuperuser</span><br></pre></td></tr></table></figure>
+<h3 id="启动web服务器"><a href="#启动web服务器" class="headerlink" title="启动web服务器"></a>启动web服务器</h3><p>在web容器中，执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python manage.py runserver 0:8000</span><br></pre></td></tr></table></figure>
+<p>在宿主机上访问</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">http://localhost:8000</span></span><br></pre></td></tr></table></figure>
+<p>就可以看到传说中的Django欢迎页：“It works！”。查看数据库，也有对应的表创建了。</p>
+<p>登录后台，也可以看到对应自动生成好的页面</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8000/admin</span><br></pre></td></tr></table></figure>
+<h3 id="MySql客户端推荐"><a href="#MySql客户端推荐" class="headerlink" title="MySql客户端推荐"></a>MySql客户端推荐</h3><p>对了，mac下MySQL或Mariadb客户端，推荐Sequel Pro，免费且超级好用，比Oracle官方的都好用。</p>
+<h1 id="能不能做的更好"><a href="#能不能做的更好" class="headerlink" title="能不能做的更好"></a>能不能做的更好</h1><p>答案是：能，必须能！比如我们可以引进docker compose来创建几个微服务，整合指挥整个系统架构；</p>
+<h2 id="让我们引入docker-compose"><a href="#让我们引入docker-compose" class="headerlink" title="让我们引入docker-compose"></a>让我们引入docker-compose</h2><p>docker-compse是我们容器集群的众多微服务管理利器。</p>
+<h3 id="修订dockerfile"><a href="#修订dockerfile" class="headerlink" title="修订dockerfile"></a>修订dockerfile</h3><p>不使用文件的方式更新源，改为在dockfile中直接用命令写入阿里云的源，方便在git中管理版本。</p>
+<p>来一份完整的dockerfile参考：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基础镜像</span></span><br><span class="line"><span class="keyword">FROM</span> python:<span class="number">2.7</span>-slim</span><br><span class="line"><span class="comment"># 维护者信息</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> kang.cunhua &lt;kangcunhua@git.com.cn&gt; </span><br><span class="line"><span class="comment"># app 所在目录</span></span><br><span class="line"><span class="keyword">WORKDIR</span> /usr/local/web</span><br><span class="line">ADD . /usr/local/web</span><br><span class="line"># 安装 app 所需依赖,做一些清理工作</span><br><span class="line">RUN	buildDeps='gcc'; \ </span><br><span class="line">	deveDeps='mysql-client'; \ </span><br><span class="line">	set -x \</span><br><span class="line">	&amp;&amp; mv /etc/apt/sources.list /etc/apt/sources.list.bak  \</span><br><span class="line">    &amp;&amp; echo "deb http://mirrors.aliyun.com/debian/ jessie main non-free contrib" &gt;/etc/apt/sources.list \</span><br><span class="line">    &amp;&amp; echo "deb http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free  contrib" &gt;&gt;/etc/apt/sources.list \</span><br><span class="line">    &amp;&amp; echo "deb-src http://mirrors.aliyun.com/debian/ jessie main non-free contrib" &gt;&gt;/etc/apt/sources.list \</span><br><span class="line">    &amp;&amp; echo "deb-src http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib" &gt;&gt;/etc/apt/sources.list \</span><br><span class="line">	&amp;&amp; apt-get update &amp;&amp; apt-get install -y libmysqlclient-dev $buildDeps $deveDeps \</span><br><span class="line">	# When using Python 2.7, please install IPython 5.x LTS Long Term Support version.</span><br><span class="line">	&amp;&amp; pip install --no-cache-dir -r requirements.txt ipython==5.4.1 \</span><br><span class="line">	-i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com  \</span><br><span class="line">	&amp;&amp; rm -rf requirements.txt \</span><br><span class="line">	# 移除gcc</span><br><span class="line">	&amp;&amp; apt-get purge -y --auto-remove $buildDeps</span><br></pre></td></tr></table></figure>
+<h3 id="dockercompose-yml"><a href="#dockercompose-yml" class="headerlink" title="dockercompose.yml"></a>dockercompose.yml</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">version: &apos;2&apos;</span><br><span class="line">services:</span><br><span class="line">  db:</span><br><span class="line">    image: mariadb</span><br><span class="line">    expose:</span><br><span class="line">      - &quot;3306&quot;</span><br><span class="line">    volumes:</span><br><span class="line">      - ~/mariadb/data:/var/lib/mysql</span><br><span class="line">      - ~/mariadb/custom:/etc/mysql/conf.d</span><br><span class="line">    environment:</span><br><span class="line">      - MYSQL_DATABASE=mydeploy</span><br><span class="line">      - MYSQL_ROOT_PASSWORD=1q2w  </span><br><span class="line">      - ON_CREATE_DB=&quot;mydeploy&quot;</span><br><span class="line">      - COMPOSE_PROJECT_NAME=autodeploy</span><br><span class="line">    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci</span><br><span class="line">  web:</span><br><span class="line">    build:  </span><br><span class="line">      context: . </span><br><span class="line">    image: mydjango:latest</span><br><span class="line">    volumes:</span><br><span class="line">      - ~/workspace:/usr/local/web</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;8000:8000&quot;</span><br><span class="line">    links:</span><br><span class="line">      - db</span><br><span class="line">    command: python ./autodeploy/manage.py runserver 0.0.0.0:8000</span><br></pre></td></tr></table></figure>
+<h2 id="启动并访问"><a href="#启动并访问" class="headerlink" title="启动并访问"></a>启动并访问</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up</span><br></pre></td></tr></table></figure>
+<h3 id="migrateDB、创建管理员"><a href="#migrateDB、创建管理员" class="headerlink" title="migrateDB、创建管理员"></a>migrateDB、创建管理员</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:z-dev kangcunhua$ docker exec -it zdev_web_1 /bin/bash</span><br><span class="line">root@e309fd9e718f:/usr/local/web# cd autodeploy/</span><br><span class="line">root@e309fd9e718f:/usr/local/web/autodeploy# python manage.py migrate</span><br><span class="line">root@e309fd9e718f:/usr/local/web/autodeploy# python manage.py createsuperuser</span><br></pre></td></tr></table></figure>
+<h3 id="校验环境变量"><a href="#校验环境变量" class="headerlink" title="校验环境变量"></a>校验环境变量</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@e309fd9e718f:/usr/local/web/autodeploy# python manage.py dbshell</span><br><span class="line">show variables like 'character_set_database';</span><br><span class="line">show variables like 'collation_%';</span><br></pre></td></tr></table></figure>
+<h3 id="排错命令"><a href="#排错命令" class="headerlink" title="排错命令"></a>排错命令</h3><p>基本上docker 能用的命令，docker-compose也能用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d	# 后台启动</span><br><span class="line">docker-compose logs		# 查看微服务群日志</span><br><span class="line">docker-compose ps		# 查看微服务群容器状态</span><br></pre></td></tr></table></figure>
+<h3 id="指定Project名启动"><a href="#指定Project名启动" class="headerlink" title="指定Project名启动"></a>指定Project名启动</h3><p>如果不指定，默认容器服务的name是”当前目录_service_number”,比如”zdev_web_1”,指定为autoploy后，应该会变成_”autodeploy__web_1”。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">COMPOSE_PROJECT_NAME=autodeploy docker-compose up</span><br><span class="line">docker-compose -p autodeploy up</span><br></pre></td></tr></table></figure>
+<h3 id="访问"><a href="#访问" class="headerlink" title="访问"></a>访问</h3><ul>
+<li><a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a></li>
+<li><a href="http://localhost:8000/admin" target="_blank" rel="noopener">http://localhost:8000/admin</a> <ul>
+<li>因为加载了之前的数据库文件，所以之前的仍旧能用：</li>
+<li>账号是之前创建好的 admin/root8888</li>
+</ul>
+</li>
+</ul>
+<h3 id="当前文件目录"><a href="#当前文件目录" class="headerlink" title="当前文件目录"></a>当前文件目录</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:workspace kangcunhua$ tree</span><br><span class="line">.</span><br><span class="line">└── autodeploy</span><br><span class="line">    ├── autodeploy</span><br><span class="line">    │   ├── __init__.py</span><br><span class="line">    │   ├── __init__.pyc</span><br><span class="line">    │   ├── settings.py</span><br><span class="line">    │   ├── settings.pyc</span><br><span class="line">    │   ├── urls.py</span><br><span class="line">    │   ├── urls.pyc</span><br><span class="line">    │   ├── wsgi.py</span><br><span class="line">    │   └── wsgi.pyc</span><br><span class="line">    ├── manage.py</span><br><span class="line">    ├── readme.md</span><br><span class="line">    ├── z-dev</span><br><span class="line">    │   ├── Dockerfile</span><br><span class="line">    │   ├── docker-compose.yml</span><br><span class="line">    │   ├── requirements.txt</span><br><span class="line">    │   └── sources.list</span><br><span class="line">    └── z-pub</span><br><span class="line">        └── Dockerfile</span><br><span class="line"></span><br><span class="line">4 directories, 15 files</span><br></pre></td></tr></table></figure>
+<h1 id="参考列表"><a href="#参考列表" class="headerlink" title="参考列表"></a>参考列表</h1><h2 id="Mariadb在Docker下安装配置"><a href="#Mariadb在Docker下安装配置" class="headerlink" title="Mariadb在Docker下安装配置"></a>Mariadb在Docker下安装配置</h2><p>参考：<a href="https://hub.docker.com/_/mariadb/" target="_blank" rel="noopener">Start a <code>mariadb</code> server instance</a>，强烈推荐。</p>
+<p>参考： <a href="http://blog.csdn.net/freewebsys/article/details/53540615" target="_blank" rel="noopener">docker（6）：使用dokcer 构建 mariadb 数据库</a></p>
+<blockquote>
+<p>使用一个最简单的办法安装了mariadb。并且将数据放到了宿主机的/data/mysql/data 目录下面了。 方便数据备份,数据迁移，同时暴露了3306端口对外。 使用docker还是非常的方便的，比起yum安装配置简单多了。 配置文件也可以通过目录映射的方式修改。 而且完全的拆分了服务，存储，接口。真的是一个集装箱了。</p>
+</blockquote>
+<h2 id="Mac-tree命令"><a href="#Mac-tree命令" class="headerlink" title="Mac tree命令"></a>Mac tree命令</h2><p>参考：<a href="http://www.cnblogs.com/ayseeing/p/4097066.html" target="_blank" rel="noopener">mac tree命令及参数</a></p>
+<blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;</span> $ brew install tree</span><br><span class="line"><span class="meta">&gt;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="Django-文档"><a href="#Django-文档" class="headerlink" title="Django 文档"></a>Django 文档</h2><ul>
+<li><a href="https://docs.djangoproject.com/en/1.11/intro/" target="_blank" rel="noopener">Getting Started</a> <ul>
+<li><a href="https://docs.djangoproject.com/en/1.11/intro/tutorial01/" target="_blank" rel="noopener">Writing your first Django app, part 1</a></li>
+<li><a href="https://docs.djangoproject.com/en/1.11/intro/tutorial02/" target="_blank" rel="noopener">Writing your first Django app, part 2</a></li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/Django/" rel="tag"># Django</a>
+          
+            <a href="/tags/Mariadb/" rel="tag"># Mariadb</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/28/O1-5-Redmine3-3-3-搭建与不完全填坑指南/" rel="next" title="Redmine3.3.3 搭建与不完全填坑指南">
+                <i class="fa fa-chevron-left"></i> Redmine3.3.3 搭建与不完全填坑指南
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/01/O1-8-05-Docker快速验证tomcat单机多实例方案/" rel="prev" title="Docker快速验证tomcat单机多实例方案">
+                Docker快速验证tomcat单机多实例方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Kang.cunhua</p>
+              <p class="site-description motion-element" itemprop="description">从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#阅读建议"><span class="nav-number">1.</span> <span class="nav-text">阅读建议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境之“Docker-Mariadb”搭建"><span class="nav-number">2.1.</span> <span class="nav-text">环境之“Docker-Mariadb”搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载Mariadb数据库镜像"><span class="nav-number">2.1.1.</span> <span class="nav-text">下载Mariadb数据库镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动并配置DB"><span class="nav-number">2.1.2.</span> <span class="nav-text">启动并配置DB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试验证"><span class="nav-number">2.1.3.</span> <span class="nav-text">测试验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#环境之“Docker-Django”搭建"><span class="nav-number">2.2.</span> <span class="nav-text">环境之“Docker-Django”搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备项目目录"><span class="nav-number">2.2.1.</span> <span class="nav-text">准备项目目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建Dockerfile"><span class="nav-number">2.2.2.</span> <span class="nav-text">创建Dockerfile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建requirements-txt"><span class="nav-number">2.2.3.</span> <span class="nav-text">创建requirements.txt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#宿主机当前目录结构"><span class="nav-number">2.2.4.</span> <span class="nav-text">宿主机当前目录结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build镜像"><span class="nav-number">2.2.5.</span> <span class="nav-text">Build镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看镜像"><span class="nav-number">2.2.6.</span> <span class="nav-text">查看镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动运行-amp-进入容器"><span class="nav-number">2.2.7.</span> <span class="nav-text">启动运行&amp;进入容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清理和验证环境"><span class="nav-number">2.2.8.</span> <span class="nav-text">清理和验证环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#脚手架生成项目-启动web服务"><span class="nav-number">2.2.9.</span> <span class="nav-text">脚手架生成项目,启动web服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#浏览器访问"><span class="nav-number">2.2.10.</span> <span class="nav-text">浏览器访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#把项目框架copy出来"><span class="nav-number">2.2.11.</span> <span class="nav-text">把项目框架copy出来</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除容器web"><span class="nav-number">2.2.12.</span> <span class="nav-text">删除容器web</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新启容器web，挂载本地目录"><span class="nav-number">2.2.13.</span> <span class="nav-text">新启容器web，挂载本地目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运行，收获Django欢迎界面"><span class="nav-number">2.2.14.</span> <span class="nav-text">运行，收获Django欢迎界面</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#让我们做的更好"><span class="nav-number">3.</span> <span class="nav-text">让我们做的更好</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#需要清醒的是，还有以下问题"><span class="nav-number">3.1.</span> <span class="nav-text">需要清醒的是，还有以下问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#改进我们的Dockerfile"><span class="nav-number">3.2.</span> <span class="nav-text">改进我们的Dockerfile</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#python-2-7-slim"><span class="nav-number">3.2.1.</span> <span class="nav-text">python:2.7-slim</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sources-list"><span class="nav-number">3.2.2.</span> <span class="nav-text">sources.list</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mirrors-aliyun-com"><span class="nav-number">3.2.3.</span> <span class="nav-text">mirrors.aliyun.com</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装mysql-client"><span class="nav-number">3.2.4.</span> <span class="nav-text">安装mysql-client</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装和卸载gcc"><span class="nav-number">3.2.5.</span> <span class="nav-text">安装和卸载gcc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装ipython-5-4-1"><span class="nav-number">3.2.6.</span> <span class="nav-text">安装ipython==5.4.1</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开始重新构建"><span class="nav-number">3.3.</span> <span class="nav-text">开始重新构建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备：创建数据库"><span class="nav-number">3.3.1.</span> <span class="nav-text">准备：创建数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备：修改DB配置"><span class="nav-number">3.3.2.</span> <span class="nav-text">准备：修改DB配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build镜像-1"><span class="nav-number">3.3.3.</span> <span class="nav-text">Build镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看镜像-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">查看镜像</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web容器访问Mariadb数据库"><span class="nav-number">3.4.</span> <span class="nav-text">Web容器访问Mariadb数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#后台启动数据库-d"><span class="nav-number">3.4.1.</span> <span class="nav-text">后台启动数据库(-d)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动web容器link数据库容器"><span class="nav-number">3.4.2.</span> <span class="nav-text">启动web容器link数据库容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证环境命令"><span class="nav-number">3.4.3.</span> <span class="nav-text">验证环境命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建管理员"><span class="nav-number">3.4.4.</span> <span class="nav-text">创建管理员</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动web服务器"><span class="nav-number">3.4.5.</span> <span class="nav-text">启动web服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MySql客户端推荐"><span class="nav-number">3.4.6.</span> <span class="nav-text">MySql客户端推荐</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#能不能做的更好"><span class="nav-number">4.</span> <span class="nav-text">能不能做的更好</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#让我们引入docker-compose"><span class="nav-number">4.1.</span> <span class="nav-text">让我们引入docker-compose</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#修订dockerfile"><span class="nav-number">4.1.1.</span> <span class="nav-text">修订dockerfile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dockercompose-yml"><span class="nav-number">4.1.2.</span> <span class="nav-text">dockercompose.yml</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启动并访问"><span class="nav-number">4.2.</span> <span class="nav-text">启动并访问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#migrateDB、创建管理员"><span class="nav-number">4.2.1.</span> <span class="nav-text">migrateDB、创建管理员</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#校验环境变量"><span class="nav-number">4.2.2.</span> <span class="nav-text">校验环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#排错命令"><span class="nav-number">4.2.3.</span> <span class="nav-text">排错命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指定Project名启动"><span class="nav-number">4.2.4.</span> <span class="nav-text">指定Project名启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问"><span class="nav-number">4.2.5.</span> <span class="nav-text">访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#当前文件目录"><span class="nav-number">4.2.6.</span> <span class="nav-text">当前文件目录</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考列表"><span class="nav-number">5.</span> <span class="nav-text">参考列表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mariadb在Docker下安装配置"><span class="nav-number">5.1.</span> <span class="nav-text">Mariadb在Docker下安装配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mac-tree命令"><span class="nav-number">5.2.</span> <span class="nav-text">Mac tree命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Django-文档"><span class="nav-number">5.3.</span> <span class="nav-text">Django 文档</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kang.cunhua</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="需求分析项目中用到了Echarts，想要把图文混排，当然包括echarts生成的Canvas图也导出PDF。 设计和实现时，分析了POI、iText、freemaker、world的xml模版、Jquery-printArea.js、JQuery Plugin-TableExport、flying saucer等等技术组合，不尽人意。甚至因为echarts不支持后端调用导出图片（没有简单易行的办法">
+<meta name="keywords" content="离线,docker,SUSE LINUX Enterprise Server 11">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker快速验证HTML导出PDF高效方案">
+<meta property="og:url" content="http://opsdev.fun/2017/11/07/O1-8-20-Docker快速验证HTML导出PDF高效方案/index.html">
+<meta property="og:site_name" content="AnInputForce">
+<meta property="og:description" content="需求分析项目中用到了Echarts，想要把图文混排，当然包括echarts生成的Canvas图也导出PDF。 设计和实现时，分析了POI、iText、freemaker、world的xml模版、Jquery-printArea.js、JQuery Plugin-TableExport、flying saucer等等技术组合，不尽人意。甚至因为echarts不支持后端调用导出图片（没有简单易行的办法">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-17T06:50:31.925Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker快速验证HTML导出PDF高效方案">
+<meta name="twitter:description" content="需求分析项目中用到了Echarts，想要把图文混排，当然包括echarts生成的Canvas图也导出PDF。 设计和实现时，分析了POI、iText、freemaker、world的xml模版、Jquery-printArea.js、JQuery Plugin-TableExport、flying saucer等等技术组合，不尽人意。甚至因为echarts不支持后端调用导出图片（没有简单易行的办法">
+
+
+
+
+
+
+  <link rel="canonical" href="http://opsdev.fun/2017/11/07/O1-8-20-Docker快速验证HTML导出PDF高效方案/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Docker快速验证HTML导出PDF高效方案 | AnInputForce</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnInputForce</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">蛮大人讲故事系列</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://opsdev.fun/2017/11/07/O1-8-20-Docker快速验证HTML导出PDF高效方案/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kang.cunhua">
+      <meta itemprop="description" content="从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnInputForce">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker快速验证HTML导出PDF高效方案
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-11-07 16:12:00" itemprop="dateCreated datePublished" datetime="2017-11-07T16:12:00+08:00">2017-11-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-06-17 14:50:31" itemprop="dateModified" datetime="2018-06-17T14:50:31+08:00">2018-06-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/diary/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h1><p>项目中用到了Echarts，想要把图文混排，当然包括echarts生成的Canvas图也导出PDF。</p>
+<p>设计和实现时，分析了POI、iText、freemaker、world的xml模版、Jquery-printArea.js、JQuery Plugin-TableExport、flying saucer等等技术组合，不尽人意。甚至因为echarts不支持后端调用导出图片（没有简单易行的办法），一度考虑要在导出时用JfreeCharts重新画一遍图表。一是不能完整体现原有设计样式，二是工期不支持这么庞大的工作量（硬撸代码解析html生成word或pdf。好吧，也同时觉得挺low的）；</p>
+<p>最终选择了wkhtmltopdf，实现了预期目标。整理成笔记，分享给大家。同时，发现docker hub有wkhtmltopdf基于apline搭建的web service镜像，生产环境可以上Docker的同学有福了，这应该是个更加高效的方案。后续考虑整合到支撑平台中，一并开源出来。</p>
+<h1 id="笔记本实验"><a href="#笔记本实验" class="headerlink" title="笔记本实验"></a>笔记本实验</h1><p>本地测试为Mac Book，生产环境请自行评估调整。</p>
+<h2 id="下载和安装"><a href="#下载和安装" class="headerlink" title="下载和安装"></a>下载和安装</h2><p>B4下，brew仓库里居然没有，所以  brew install wkhtmltopdf安装报错。</p>
+<p>直接贴官方<a href="https://wkhtmltopdf.org/downloads.html" target="_blank" rel="noopener">链接</a>了：有依赖亲自行安装依赖；</p>
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:workspace kangcunhua$ wkhtmltopdf --version</span><br><span class="line">wkhtmltopdf 0.12.4 (with patched qt)</span><br></pre></td></tr></table></figure>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="联网抓取"><a href="#联网抓取" class="headerlink" title="联网抓取"></a>联网抓取</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:~ kangcunhua$ wkhtmltopdf --header-center  '报表' --outline  --header-line --margin-top 2cm --header-line http://www.qq.com/  qq.pdf</span><br></pre></td></tr></table></figure>
+<h3 id="本地页面测试"><a href="#本地页面测试" class="headerlink" title="本地页面测试"></a>本地页面测试</h3><p>index.html见<a href="##静态页面">静态页面</a></p>
+<p>–zoom 4 是Mac book上实验出来的参数，这样页面是正常A4宽幅；在windows10、Suse 11下不用加这个参数。</p>
+<p>toc 参数生成目录，包括左侧导航；—toc-header-text自定义目录名；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:~ kangcunhua$ wkhtmltopdf  --zoom 4 toc --toc-header-text "第四季度季报" index.html export.pdf</span><br></pre></td></tr></table></figure>
+<h1 id="模拟商业环境"><a href="#模拟商业环境" class="headerlink" title="模拟商业环境"></a>模拟商业环境</h1><p>我们拿到项目中实践验证下方案。商业项目，往往是残酷的要求，会遇到各种各样demo时碰不上的挑战。</p>
+<p>思路还是先用docker神器，模拟商业环境，验证方案，然后再修订验证后的方案到正式项目环境验证。</p>
+<p>客户方提供的环境是SuSE。我们先来看看是哪个版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/SuSE-release # 可以看到补丁版本</span><br><span class="line">SUSE LINUX Enterprise Server 11 (x86_64)</span><br><span class="line">VERSION = 11</span><br><span class="line">PATCHLEVEL = 4</span><br></pre></td></tr></table></figure>
+<h2 id="请Docker神器"><a href="#请Docker神器" class="headerlink" title="请Docker神器"></a>请Docker神器</h2><p>查找SuSE镜像，恰好有一个11版本的，下载镜像先</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> docker search SUSE # yuzhenpin/suse-11-sp3-x86_64-java</span><br><span class="line"><span class="meta">$</span> docker pull yuzhenpin/suse-11-sp3-x86_64-java</span><br></pre></td></tr></table></figure>
+<h2 id="启动镜像"><a href="#启动镜像" class="headerlink" title="启动镜像"></a>启动镜像</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">docker run --name suse-ep -it yuzhenpin/suse-11-sp3-x86_64-java /bin/bash</span><br><span class="line">9e023776a1d5:/ # java -version</span><br><span class="line">java version "1.7.0_51"</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.7.0_51-b13)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 24.51-b03, mixed mode)</span><br><span class="line">9e023776a1d5:/ # id </span><br><span class="line">uid=0(root) gid=0(root) groups=0(root)</span><br><span class="line">9e023776a1d5:/ # groupadd prms &amp;&amp; useradd -d /prms -g prms -m prms</span><br><span class="line">9e023776a1d5:/ # passwd prms</span><br><span class="line">9e023776a1d5:/ # su prms</span><br></pre></td></tr></table></figure>
+<h2 id="安装和配置"><a href="#安装和配置" class="headerlink" title="安装和配置"></a>安装和配置</h2><p>因为下载的二进制版本的，直接把wkhtmltopdf拷贝进容器即可。index.html是写的测试页面，后文附有源码：此文件用到的jquery相关js直接引用了CDN，故实验在联网环境下进行的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp wkhtmltox-0.12.4_linux-generic-amd64.tar.xz su-ext:/prms/workspace</span><br><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp index.html su-ext:/prms/workspace</span><br></pre></td></tr></table></figure>
+<h2 id="检查运行依赖"><a href="#检查运行依赖" class="headerlink" title="检查运行依赖"></a>检查运行依赖</h2><p>使用ldd命令，not found的就是对应的依赖包不存在：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # ldd wkhtmltopdf </span><br><span class="line">	linux-vdso.so.1 =&gt;  (0x00007ffe40bd2000)</span><br><span class="line">	libXrender.so.1 =&gt; not found</span><br><span class="line">	libfontconfig.so.1 =&gt; not found</span><br><span class="line">	libfreetype.so.6 =&gt; not found</span><br><span class="line">	libXext.so.6 =&gt; not found</span><br><span class="line">	libX11.so.6 =&gt; not found</span><br><span class="line">	libz.so.1 =&gt; /lib64/libz.so.1 (0x00007f9ca59ad000)</span><br><span class="line">	libdl.so.2 =&gt; /lib64/libdl.so.2 (0x00007f9ca57a9000)</span><br><span class="line">	librt.so.1 =&gt; /lib64/librt.so.1 (0x00007f9ca55a0000)</span><br><span class="line">	libpthread.so.0 =&gt; /lib64/libpthread.so.0 (0x00007f9ca5383000)</span><br><span class="line">	libstdc++.so.6 =&gt; /usr/lib64/libstdc++.so.6 (0x00007f9ca507b000)</span><br><span class="line">	libm.so.6 =&gt; /lib64/libm.so.6 (0x00007f9ca4e02000)</span><br><span class="line">	libgcc_s.so.1 =&gt; /lib64/libgcc_s.so.1 (0x00007f9ca4bec000)</span><br><span class="line">	libc.so.6 =&gt; /lib64/libc.so.6 (0x00007f9ca4870000)</span><br><span class="line">	/lib64/ld-linux-x86-64.so.2 (0x00007f9ca5bc5000)</span><br></pre></td></tr></table></figure>
+<h3 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h3><p>使用 zypper se 命令查找，根据查找结果，来安装需要的版本；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper se libXrender                                                                       </span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper install xorg-x11-libXrender</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper se libfreetype     </span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper install libfreetype6</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper se libXext</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper install xorg-x11-libXext</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper se fontconfig</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper install fontconfig</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper se libX11</span><br><span class="line">7d183ecb0026:/prms/workspace/wkhtmltox/bin # zypper install xorg-x11-libX11</span><br></pre></td></tr></table></figure>
+<p>需要在html代码中指定font-face，所以需要一种支持中英文的字体。这里不指定的话，中英文都是黑色方框。因为不知容器使用的是何种字体，没找到Suse如何查看当前已有字体。从网下下载了文泉驿正黑，cp了字体进来，发现是乱码，mv重命名为tt.tff；cp到字体目录。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">7d183ecb0026:/usr/share/fonts # mkdir windows</span><br><span class="line">7d183ecb0026:/prms/workspace # mv tt.ttf /usr/share/fonts/windows/</span><br><span class="line">7d183ecb0026:/prms/workspace # ./wkhtmltox/bin/wkhtmltopdf index.html exp.pdf</span><br><span class="line">QIconvCodec::convertToUnicode: using Latin-1 for conversion, iconv_open failed</span><br><span class="line">QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv_open failed</span><br><span class="line">Loading pages (1/6)</span><br><span class="line">Counting pages (2/6)                                               </span><br><span class="line">Resolving links (4/6)                                                       </span><br><span class="line">Loading headers and footers (5/6)                                           </span><br><span class="line">Printing pages (6/6)</span><br><span class="line">Done</span><br></pre></td></tr></table></figure>
+<h3 id="和容器之间复制文件"><a href="#和容器之间复制文件" class="headerlink" title="和容器之间复制文件"></a>和容器之间复制文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp wkhtmltox-0.12.4_linux-generic-amd64.tar.xz su-ext:/prms/workspace</span><br><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp index.html su-ext:/prms/workspace</span><br><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp 文泉驿等宽正黑.ttf su-ext:/prms/workspace</span><br><span class="line">ChinaDreams:copy2docker kangcunhua$ docker cp su-ext:/prms/workspace/exp.pdf .</span><br></pre></td></tr></table></figure>
+<h1 id="商业环境实战"><a href="#商业环境实战" class="headerlink" title="商业环境实战"></a>商业环境实战</h1><p>待补充。</p>
+<p>2017.11.10update: 商业环境最大的挑战是内网。还有个挑战是客户使用的是SuSE Enterprise，这种情况下，如果缺少依赖，补丁包安装很麻烦。</p>
+<p>通过走手续，在内网申请了wkhtmltopdf二进制包，工程师传到测试环境，直接运行了测试命令，居然一条就过！依赖不缺，甚至中文字体也不缺。这只能说是运气。不过，凡事预则立，多准备一些，事情周密一些总是没错的。</p>
+<p>接下来，就是撰写个工具类调用shell命令了，可能还要考虑权限认证的问题。不过，从前台登录后的UI发起导出，应该不会存在需要认证的问题。</p>
+<p>皆大欢喜！</p>
+<h1 id="错误、参考和源码"><a href="#错误、参考和源码" class="headerlink" title="错误、参考和源码"></a>错误、参考和源码</h1><h2 id="报错：SslHandshakeFailedError"><a href="#报错：SslHandshakeFailedError" class="headerlink" title="报错：SslHandshakeFailedError"></a>报错：SslHandshakeFailedError</h2><p>笔记本实验时，报了个错。貌似也不影响最终需要的导出PDF结果。后来猜测应该是页面上有button或与打印无关的js导致的，删了就好了。国外的网友写了一个工具<a href="https://github.com/carleton" target="_blank" rel="noopener">carleton</a>/<strong>moodle-scraper</strong>，也碰上了这个问题：这个错误貌似不是我第一个碰上，官方也没有修复。</p>
+<h3 id="moodle-scraper的KNOWN-CURRENT-ISSUES"><a href="#moodle-scraper的KNOWN-CURRENT-ISSUES" class="headerlink" title="moodle-scraper的KNOWN CURRENT ISSUES"></a>moodle-scraper的KNOWN CURRENT ISSUES</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">WebToPDF</span><br><span class="line">KNOWN CURRENT ISSUES:</span><br><span class="line">1) "Issue found on page:wkhtmltopdf reported an error:</span><br><span class="line">Mon Mar 28 20:51:52 unreg-30-152.dyn.carleton.edu wkhtmltopdf[3817] <span class="xml"><span class="tag">&lt;<span class="name">Error</span>&gt;</span></span>: CGContextSetShouldAntialias: invalid context 0x0" </span><br><span class="line">As of Spring 2016 this problem has not been solved and seems to be a problem with whtmltopdf using a deprecated library of Mac OSX. Try it with Windows and see if it breaks?</span><br><span class="line">Additionally, reported issue on GitHub: https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2196</span><br></pre></td></tr></table></figure>
+<h3 id="报错信息："><a href="#报错信息：" class="headerlink" title="报错信息："></a>报错信息：</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Loading pages (1/6)</span><br><span class="line">^C===========================&gt;                               ] 48%</span><br><span class="line">ChinaDreams:WebRoot kangcunhua$ wkhtmltopdf --disable-smart-shrinking index.html export.pdf</span><br><span class="line">Loading pages (1/6)</span><br><span class="line">QFont::setPixelSize: Pixel size &lt;= 0 (0)                     ] 49%</span><br><span class="line">Counting pages (2/6)                                               </span><br><span class="line">QFont::setPixelSize: Pixel size &lt;= 0 (0)=====================] Object 1 of 1</span><br><span class="line">Resolving links (4/6)                                                       </span><br><span class="line">Loading headers and footers (5/6)                                           </span><br><span class="line">Printing pages (6/6)</span><br><span class="line">Nov  7 13:53:25  wkhtmltopdf[2603] &lt;Error&gt;: CGContextSetShouldAntialias: invalid context 0x0. If you want to see the backtrace, please set CG_CONTEXT_SHOW_BACKTRACE environmental variable.</span><br><span class="line">Nov  7 13:53:25  wkhtmltopdf[2603] &lt;Error&gt;: CGContextSetShouldSmoothFonts: invalid context 0x0. If you want to see the backtrace, please set CG_CONTEXT_SHOW_BACKTRACE environmental variable.</span><br><span class="line">Nov  7 13:53:25  wkhtmltopdf[2603] &lt;Error&gt;: CGContextSetFillColorSpace: invalid context 0x0. If you want to see the backtrace, please set CG_CONTEXT_SHOW_BACKTRACE environmental variable.</span><br><span class="line">Nov  7 13:53:25  wkhtmltopdf[2603] &lt;Error&gt;: CGContextSetFillColor: invalid context 0x0. If you want to see the backtrace, please set CG_CONTEXT_SHOW_BACKTRACE environmental variable.</span><br><span class="line">Done                                                                      </span><br><span class="line">Exit with code 1 due to network error: SslHandshakeFailedError</span><br></pre></td></tr></table></figure>
+<h2 id="报错convertToUnicode："><a href="#报错convertToUnicode：" class="headerlink" title="报错convertToUnicode："></a>报错convertToUnicode：</h2><p>在容器中，配置好之后，运行转换命令，报了一个错误，但从结果来看，不影响最终pdf生产。故此处没有特殊处理，不过网友给出了解决方案：强迫症或时间充分的网友可以自行验证和修复：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">7d183ecb0026:/prms/workspace # ./wkhtmltox/bin/wkhtmltopdf index.html exp.pdf</span><br><span class="line">QIconvCodec::convertToUnicode: using Latin-1 for conversion, iconv_open failed</span><br><span class="line">QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv_open failed</span><br><span class="line">Loading pages (1/6)</span><br><span class="line">Counting pages (2/6)                                               </span><br><span class="line">Resolving links (4/6)                                                       </span><br><span class="line">Loading headers and footers (5/6)                                           </span><br><span class="line">Printing pages (6/6)</span><br><span class="line">Done</span><br></pre></td></tr></table></figure>
+<p>注意上文报了一个Qt错误，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">QIconvCodec::convertToUnicode: using Latin-1 for conversion, iconv_open failed</span><br><span class="line">QIconvCodec::convertFromUnicode: using Latin-1 for conversion, iconv_open failed</span><br></pre></td></tr></table></figure>
+<p>这是个<a href="http://blog.csdn.net/wangyuanfei555/article/details/47399771" target="_blank" rel="noopener">Qt移植错误</a>：</p>
+<blockquote>
+<p>下载 <a href="http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz" target="_blank" rel="noopener">http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz</a>   </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;</span>  ./configure -prefix=$PWD/_install -host=arm-linux-gnueabihf </span><br><span class="line"><span class="meta">&gt;</span>   make</span><br><span class="line"><span class="meta">&gt;</span>   make install </span><br><span class="line"><span class="meta">&gt;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p>把_install/lib 下的preloadable_libiconv.so 拷到系统的/system/lib 下,</p>
+<p>export LD_PRELOAD=/system/lib/preloadable_libiconv.so      </p>
+</blockquote>
+<h2 id="参考链接1"><a href="#参考链接1" class="headerlink" title="参考链接1"></a>参考链接1</h2><p>感谢各位勇于分享的亲：</p>
+<ul>
+<li><a href="http://www.jb51.net/article/108692.htm" target="_blank" rel="noopener">jquery PrintArea 实现票据的套打功能(代码)</a></li>
+<li><a href="https://github.com/HenriettaSu/Echarts-export" target="_blank" rel="noopener">通過選擇excel文件或輸入json數據，自動生成圖表工具</a></li>
+<li><a href="http://www.open-open.com/lib/view/open1345021193194.html" target="_blank" rel="noopener">FreeMarker + xml 导出word</a></li>
+<li><a href="https://www.codeproject.com/articles/20160/how-to-convert-an-html-table-into-an-xml-file" target="_blank" rel="noopener">How To Convert an HTML Table into an XML File</a> <ul>
+<li>这篇附有C#源码，直接转换table的html代码为word的xml格式，我一开始最想解决的办法，可惜没有Java版的。自己硬撸又来不及；最终放弃。</li>
+</ul>
+</li>
+<li><a href="https://my.oschina.net/u/603602/blog/268611" target="_blank" rel="noopener">flying saucer html转pdf经验分享</a></li>
+<li><a href="http://blog.csdn.net/qq_14873105/article/details/51394026" target="_blank" rel="noopener">最好用Html转pdf的工具——wkhtmltopdf</a></li>
+<li><a href="http://www.cnblogs.com/lh460795/p/6549398.html" target="_blank" rel="noopener">wkhtmltopdf 参数介绍</a></li>
+<li><a href="http://www.jianshu.com/p/57c897cfaa27" target="_blank" rel="noopener">HTML 转 PDF 排雷 之 wkhtmltopdf 转换得到的PDF没有内容</a></li>
+<li><a href="http://www.cnblogs.com/huangcong/p/5526316.html" target="_blank" rel="noopener">wkhtmltopdf解决分页问题</a><ul>
+<li>wkhtmltopdf 有个很好的方法，就是在那个div的样式后添加一个：page-break-inside:avoid;就ok了。</li>
+</ul>
+</li>
+<li><a href="http://blog.csdn.net/shanliangliuxing/article/details/6833471" target="_blank" rel="noopener">iText和flying saucer结合生成pdf的技术</a></li>
+<li><a href="https://segmentfault.com/a/1190000011588622" target="_blank" rel="noopener">web打印一篇就够，jspdf，wkhtmltopdf</a></li>
+<li><a href="http://blog.csdn.net/u010588262/article/details/54617450" target="_blank" rel="noopener">使用wkhtmltopdf将html转为pdf</a> ：<ul>
+<li>这篇文章直接指出了wkhtml支持echarts的canvas标签，哇哈哈:)</li>
+</ul>
+</li>
+<li><a href="http://blog.csdn.net/zhangkezhi_471885889/article/details/52184700" target="_blank" rel="noopener">HTML转PDF工具（wkhtmltopdf）介绍，支持widows和linux</a><ul>
+<li>html的table中不能用thead，用了后换页会出现两个表头问题如图</li>
+<li>可以用thead，不过得加样式 tr { page-break-inside: avoid !important;}</li>
+</ul>
+</li>
+<li><a href="http://blog.csdn.net/laokaizzz/article/details/48930407" target="_blank" rel="noopener">wkhtmltoxwkhtmltopdf linux 安装</a><ul>
+<li>php扩展php-wkhtmltox项目主页： <a href="https://github.com/mreiferson/php-wkhtmltox" target="_blank" rel="noopener">https://github.com/mreiferson/php-wkhtmltox</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="参考链接2"><a href="#参考链接2" class="headerlink" title="参考链接2"></a>参考链接2</h2><p><a href="http://pizibaidu.blog.51cto.com/1361909/1924076" target="_blank" rel="noopener">wkhtmltopdf网页转PDF程序安装教程</a></p>
+<p><a href="linux下查看yum/rpm/dpkg某软件是否已安装的方法">linux下查看yum/rpm/dpkg某软件是否已安装的方法</a></p>
+<p><a href="https://www.cyberciti.biz/faq/debian-ubuntu-linux-wkhtmltopdf-error-while-loading-shared-libraries-libxrender-so-1/" target="_blank" rel="noopener">Error while loading shared libraries: libXrender.so.1 on Linux</a></p>
+<h2 id="静态页面"><a href="#静态页面" class="headerlink" title="静态页面"></a>静态页面</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"Content_Type"</span> <span class="attr">content</span>=<span class="string">"text/html"</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>My JSP 'index.jsp' starting page<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"pragma"</span> <span class="attr">content</span>=<span class="string">"no-cache"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"cache-control"</span> <span class="attr">content</span>=<span class="string">"no-cache"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"expires"</span> <span class="attr">content</span>=<span class="string">"0"</span>&gt;</span>    </span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"keywords"</span> <span class="attr">content</span>=<span class="string">"keyword1,keyword2,keyword3"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"description"</span> <span class="attr">content</span>=<span class="string">"export echarts to pdf"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://code.jquery.com/jquery-1.9.1.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  	<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span> <span class="attr">src</span>=<span class="string">"https://cdn.bootcss.com/echarts/3.7.2/echarts.simple.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">  	@font-face&#123;</span></span><br><span class="line"><span class="undefined">		font-family: Simsun;</span></span><br><span class="line"><span class="undefined">		src:url(“/usr/share/fonts/windows/tt.ttf”)</span></span><br><span class="line"><span class="undefined">	&#125;</span></span><br><span class="line"><span class="undefined">	body&#123;</span></span><br><span class="line"><span class="undefined">		font-family: tt ;</span></span><br><span class="line"><span class="undefined">	&#125;</span></span><br><span class="line"><span class="undefined">  	</span></span><br><span class="line"><span class="undefined">	div&#123;page-break-inside:avoid;&#125;  </span></span><br><span class="line"><span class="undefined">  	table&#123;</span></span><br><span class="line"><span class="undefined">		page-break-inside:avoid;</span></span><br><span class="line"><span class="undefined">  	&#125;</span></span><br><span class="line"><span class="undefined">  	td&#123;</span></span><br><span class="line"><span class="undefined">  		 border:1px solid #F00</span></span><br><span class="line"><span class="undefined">  	&#125;</span></span><br><span class="line"><span class="undefined">  </span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">		</span><br><span class="line">	<span class="tag">&lt;<span class="name">H1</span>&gt;</span>First Title<span class="tag">&lt;/<span class="name">H1</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span>&gt;</span>测试:test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span>&gt;</span>by kang.cunhua;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">H2</span>&gt;</span>二级标题<span class="tag">&lt;/<span class="name">H2</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">		<span class="tag">&lt;<span class="name">pre</span>&gt;</span></span><br><span class="line">		正文：</span><br><span class="line">		轻轻的我走了，</span><br><span class="line">		正如我轻轻的来；</span><br><span class="line">		我轻轻的招手，</span><br><span class="line">		作别西天的云彩。</span><br><span class="line"></span><br><span class="line">		----</span><br><span class="line">		</span><br><span class="line">		那河畔的金柳，</span><br><span class="line">		是夕阳中的新娘；</span><br><span class="line">		波光里的艳影，</span><br><span class="line">		在我的心头荡漾。</span><br><span class="line">		</span><br><span class="line">		----</span><br><span class="line">		</span><br><span class="line">		软泥上的青荇⑴，</span><br><span class="line">		油油的在水底招摇⑵；</span><br><span class="line">		在康河的柔波里，</span><br><span class="line">		我甘心做一条水草！</span><br><span class="line">		</span><br><span class="line">		----</span><br><span class="line">		</span><br><span class="line">		那榆荫下的一潭，</span><br><span class="line">		不是清泉，是天上虹；</span><br><span class="line">		揉碎在浮藻间，</span><br><span class="line">		沉淀着彩虹似的梦。</span><br><span class="line">		</span><br><span class="line">		<span class="tag">&lt;/<span class="name">pre</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">		<span class="tag">&lt;<span class="name">H3</span>&gt;</span>三级标题<span class="tag">&lt;/<span class="name">H3</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">table</span> <span class="attr">border</span>=<span class="string">"0"</span> <span class="attr">cellpadding</span>=<span class="string">"0"</span> <span class="attr">cellspacing</span>=<span class="string">"0"</span>&gt;</span></span><br><span class="line">    	<span class="tag">&lt;<span class="name">tr</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span> <span class="attr">colspan</span>=<span class="string">"2"</span> <span class="attr">align</span>=<span class="string">"center"</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    	<span class="tag">&lt;<span class="name">tr</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    	<span class="tag">&lt;<span class="name">tr</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;<span class="name">td</span>&gt;</span>第一行第一列<span class="tag">&lt;/<span class="name">td</span>&gt;</span><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- 为ECharts准备一个具备大小（宽高）的Dom --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">H4</span>&gt;</span>四级标题<span class="tag">&lt;/<span class="name">H4</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"main"</span> <span class="attr">style</span>=<span class="string">"width: 600px;height:400px;"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">	  </span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">        // 基于准备好的dom，初始化echarts实例</span></span><br><span class="line"><span class="undefined">        var myChart = echarts.init(document.getElementById('main'));</span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="undefined">        // 指定图表的配置项和数据</span></span><br><span class="line"><span class="undefined">        var option = &#123;</span></span><br><span class="line"><span class="undefined">            title: &#123;</span></span><br><span class="line"><span class="undefined">                text: 'ECharts 入门示例'</span></span><br><span class="line"><span class="undefined">            &#125;,</span></span><br><span class="line"><span class="undefined">            tooltip: &#123;&#125;,</span></span><br><span class="line"><span class="undefined">            legend: &#123;</span></span><br><span class="line"><span class="undefined">                data:['销量']</span></span><br><span class="line"><span class="undefined">            &#125;,</span></span><br><span class="line"><span class="undefined">            xAxis: &#123;</span></span><br><span class="line"><span class="undefined">                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]</span></span><br><span class="line"><span class="undefined">            &#125;,</span></span><br><span class="line"><span class="undefined">            yAxis: &#123;&#125;,</span></span><br><span class="line"><span class="undefined">            series: [&#123;</span></span><br><span class="line"><span class="undefined">                name: '销量',</span></span><br><span class="line"><span class="undefined">                type: 'bar',</span></span><br><span class="line"><span class="undefined">                data: [5, 20, 36, 10, 10, 20]</span></span><br><span class="line"><span class="undefined">            &#125;]</span></span><br><span class="line"><span class="undefined">        &#125;;</span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="undefined">        // 使用刚指定的配置项和数据显示图表。</span></span><br><span class="line"><span class="undefined">        myChart.setOption(option);</span></span><br><span class="line"><span class="undefined">	</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>	</span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/离线/" rel="tag"># 离线</a>
+          
+            <a href="/tags/docker/" rel="tag"># docker</a>
+          
+            <a href="/tags/SUSE-LINUX-Enterprise-Server-11/" rel="tag"># SUSE LINUX Enterprise Server 11</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/01/O1-8-05-Docker快速验证tomcat单机多实例方案/" rel="next" title="Docker快速验证tomcat单机多实例方案">
+                <i class="fa fa-chevron-left"></i> Docker快速验证tomcat单机多实例方案
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/18/O1-8-07-Docker快速验证不转发让Tomcat绑定80端口/" rel="prev" title="Docker快速验证：不转发让Tomcat绑定80端口">
+                Docker快速验证：不转发让Tomcat绑定80端口 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Kang.cunhua</p>
+              <p class="site-description motion-element" itemprop="description">从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#需求分析"><span class="nav-number">1.</span> <span class="nav-text">需求分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#笔记本实验"><span class="nav-number">2.</span> <span class="nav-text">笔记本实验</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#下载和安装"><span class="nav-number">2.1.</span> <span class="nav-text">下载和安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#验证"><span class="nav-number">2.2.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试"><span class="nav-number">2.3.</span> <span class="nav-text">测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#联网抓取"><span class="nav-number">2.3.1.</span> <span class="nav-text">联网抓取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地页面测试"><span class="nav-number">2.3.2.</span> <span class="nav-text">本地页面测试</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#模拟商业环境"><span class="nav-number">3.</span> <span class="nav-text">模拟商业环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#请Docker神器"><span class="nav-number">3.1.</span> <span class="nav-text">请Docker神器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启动镜像"><span class="nav-number">3.2.</span> <span class="nav-text">启动镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装和配置"><span class="nav-number">3.3.</span> <span class="nav-text">安装和配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检查运行依赖"><span class="nav-number">3.4.</span> <span class="nav-text">检查运行依赖</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装依赖"><span class="nav-number">3.4.1.</span> <span class="nav-text">安装依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#和容器之间复制文件"><span class="nav-number">3.4.2.</span> <span class="nav-text">和容器之间复制文件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#商业环境实战"><span class="nav-number">4.</span> <span class="nav-text">商业环境实战</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#错误、参考和源码"><span class="nav-number">5.</span> <span class="nav-text">错误、参考和源码</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#报错：SslHandshakeFailedError"><span class="nav-number">5.1.</span> <span class="nav-text">报错：SslHandshakeFailedError</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#moodle-scraper的KNOWN-CURRENT-ISSUES"><span class="nav-number">5.1.1.</span> <span class="nav-text">moodle-scraper的KNOWN CURRENT ISSUES</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#报错信息："><span class="nav-number">5.1.2.</span> <span class="nav-text">报错信息：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#报错convertToUnicode："><span class="nav-number">5.2.</span> <span class="nav-text">报错convertToUnicode：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接1"><span class="nav-number">5.3.</span> <span class="nav-text">参考链接1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接2"><span class="nav-number">5.4.</span> <span class="nav-text">参考链接2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#静态页面"><span class="nav-number">5.5.</span> <span class="nav-text">静态页面</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kang.cunhua</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

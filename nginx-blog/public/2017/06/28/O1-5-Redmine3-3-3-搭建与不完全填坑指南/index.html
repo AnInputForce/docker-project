@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Redmine3.3.3 搭建、不完全填坑指南、不联网安装、Windows内网迁移； 环境与搭建Redmine3.3.3 + SQL Server2012  为啥不用MySQL，为啥要用SQL Server2012：因为客户习惯；没有选择MySQL还避免踩了一个坑：Redmine3.3.3还暂不支持MySQL5.7(截止现在的最新版本，Redmine3.3.3、Redmine3.3.4和MySQL">
+<meta name="keywords" content="redmine,SQL Server2012,离线">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redmine3.3.3 搭建与不完全填坑指南">
+<meta property="og:url" content="http://opsdev.fun/2017/06/28/O1-5-Redmine3-3-3-搭建与不完全填坑指南/index.html">
+<meta property="og:site_name" content="AnInputForce">
+<meta property="og:description" content="Redmine3.3.3 搭建、不完全填坑指南、不联网安装、Windows内网迁移； 环境与搭建Redmine3.3.3 + SQL Server2012  为啥不用MySQL，为啥要用SQL Server2012：因为客户习惯；没有选择MySQL还避免踩了一个坑：Redmine3.3.3还暂不支持MySQL5.7(截止现在的最新版本，Redmine3.3.3、Redmine3.3.4和MySQL">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-17T07:11:42.303Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redmine3.3.3 搭建与不完全填坑指南">
+<meta name="twitter:description" content="Redmine3.3.3 搭建、不完全填坑指南、不联网安装、Windows内网迁移； 环境与搭建Redmine3.3.3 + SQL Server2012  为啥不用MySQL，为啥要用SQL Server2012：因为客户习惯；没有选择MySQL还避免踩了一个坑：Redmine3.3.3还暂不支持MySQL5.7(截止现在的最新版本，Redmine3.3.3、Redmine3.3.4和MySQL">
+
+
+
+
+
+
+  <link rel="canonical" href="http://opsdev.fun/2017/06/28/O1-5-Redmine3-3-3-搭建与不完全填坑指南/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Redmine3.3.3 搭建与不完全填坑指南 | AnInputForce</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnInputForce</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">蛮大人讲故事系列</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://opsdev.fun/2017/06/28/O1-5-Redmine3-3-3-搭建与不完全填坑指南/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Kang.cunhua">
+      <meta itemprop="description" content="从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnInputForce">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Redmine3.3.3 搭建与不完全填坑指南
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-06-28 22:51:00" itemprop="dateCreated datePublished" datetime="2017-06-28T22:51:00+08:00">2017-06-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-06-17 15:11:42" itemprop="dateModified" datetime="2018-06-17T15:11:42+08:00">2018-06-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/diary/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Redmine3.3.3 搭建、不完全填坑指南、不联网安装、Windows内网迁移；</p>
+<h1 id="环境与搭建"><a href="#环境与搭建" class="headerlink" title="环境与搭建"></a>环境与搭建</h1><p>Redmine3.3.3 + SQL Server2012 </p>
+<p>为啥不用MySQL，为啥要用SQL Server2012：因为客户习惯；没有选择MySQL还避免踩了一个坑：Redmine3.3.3还暂不支持MySQL5.7(截止现在的最新版本，Redmine3.3.3、Redmine3.3.4和MySQL5.7不兼容（<a href="http://www.redmine.org/issues/25342#note-4" target="_blank" rel="noopener">参考</a>)。</p>
+<h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><ul>
+<li>选用合适的开发辅助工具，项目就成功了一半</li>
+<li>精细化管理开发任务</li>
+<li>微软的Project跟进太累了，版本难管，分享困难</li>
+<li>敏捷开发、快速迭代的需求</li>
+<li>方便后续UAT客户参与测试，反馈缺陷和意见，</li>
+<li>方便各角色异步协同工作，进度可视化。</li>
+</ul>
+<h2 id="软件准备"><a href="#软件准备" class="headerlink" title="软件准备"></a>软件准备</h2><ul>
+<li>RoR环境：<a href="https://s3.amazonaws.com/railsinstaller/Windows/railsinstaller-3.2.0.exe" target="_blank" rel="noopener">点这里下载</a></li>
+<li>Redmine3.3.3：<a href="http://www.redmine.org/projects/redmine/wiki/Download" target="_blank" rel="noopener">点这里下载</a></li>
+<li>SQL Server 2012：客户已安装</li>
+<li>SVN Server：客户已安装</li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>参考：<a href="http://www.redmine.org/projects/redmine/wiki/RedmineInstall#Step-5-Session-store-secret-generation" target="_blank" rel="noopener">官方教程</a></p>
+<h3 id="环境和APP"><a href="#环境和APP" class="headerlink" title="环境和APP"></a>环境和APP</h3><ul>
+<li>运行railsInstaller3.2.0.exe，安装rails环境；</li>
+<li>修改为ruby-china的gem源：参考<a href="https://gems.ruby-china.org" target="_blank" rel="noopener">这里</a>；</li>
+<li>解压redmine3.3.0.zip到目标服务器，比如，E:\PM\redmine3.3.0;<ul>
+<li>找到config/db.yml，配置数据库相关信息；新建数据库用户和数据库实例；</li>
+</ul>
+</li>
+</ul>
+<h3 id="联网安装"><a href="#联网安装" class="headerlink" title="联网安装"></a>联网安装</h3><p>先安装管理工具bundle：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gem install bundler</span><br></pre></td></tr></table></figure>
+<p>联网安装依赖</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd E:\PM\redmine3.3.0</span><br><span class="line">bundle install --without development test rmagick</span><br></pre></td></tr></table></figure>
+<p>Session store secret generation</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle exec rake generate_secret_token</span><br></pre></td></tr></table></figure>
+<h3 id="数据库初始化"><a href="#数据库初始化" class="headerlink" title="数据库初始化"></a>数据库初始化</h3><p>初始化结构</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RAILS_ENV=production bundle exec rails db:migrate</span><br></pre></td></tr></table></figure>
+<p>装载默认数据</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RAILS_ENV=production REDMINE_LANG=zh bundle exec rake redmine:load_default_data</span><br></pre></td></tr></table></figure>
+<h3 id="启动Redmine"><a href="#启动Redmine" class="headerlink" title="启动Redmine"></a>启动Redmine</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rails server webrick -e production -b 0.0.0.0 -p 3000</span><br></pre></td></tr></table></figure>
+<p>admin/admin，根据提示改密码</p>
+<p>Ctrl + c停止redmine</p>
+<h3 id="安装插件"><a href="#安装插件" class="headerlink" title="安装插件"></a>安装插件</h3><p>安装需要的即可，依据回忆整理，可能有所出入。</p>
+<ul>
+<li>a_common_libs // 某插件依赖</li>
+<li>advanced_roadmap_v2 // 非常重要的一个插件，有蓝图才有未来</li>
+<li>bestest_timer 工时插件 // 得有配套流程制度支撑；</li>
+<li>custom_menu // 自定义菜单插件</li>
+<li>redmine_code_review插件 // 最好搭配有制度支撑，有人检查</li>
+<li>redmine_agile // 敏捷插件 , 客户喜欢敏捷。还有一款彻底开源的，Redmine Dashboard，没测试。看着像更好的。</li>
+<li>Redmine_subtask_list_accordion // 子任务折叠插件</li>
+<li>Redmine Subtasks Inherited Fields // 子任务继承插件，时间所限，没测试（可以在生成子任务时，继承父任务的字段，包括自定义字段。注意名字要改为redmine_subtasks_inherited_fields）</li>
+</ul>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><ul>
+<li>新建项目：***project</li>
+<li>新增团队成员</li>
+<li>配置SVN版本库</li>
+<li>配置RoadMap、版本、里程碑</li>
+<li>配置问题类别</li>
+<li>新建问题或导入问题</li>
+<li>配置自定义菜单</li>
+<li>配置常见查询</li>
+<li>讨论区发帖：Redmine使用要求</li>
+</ul>
+<h3 id="培训推广"><a href="#培训推广" class="headerlink" title="培训推广"></a>培训推广</h3><p>好的工具要配套建章立制，搞好培训和推广。人，尤其是伪新人和老油条，多是没有下限的。伪新人是不知道什么是优秀，老油条是在试探项目混日子的底线。他们不会在意你强调了什么，会care你要检查什么。所以，至少流程制定出来，一定要有人负责，有人检查，有专项的汇报。再忙，听个汇报，做个跟进的时间还是要有的。</p>
+<p>在实际使用过程中，对于逾期的计划，不能就放任红着不处理。要有说法啊，是我们的任务计划预估时间不足？还是工程能力的问题或是态度的问题？亦或是你没跟进检查的问题？该调整开发测试计划或调整人力资源倾斜或调整人员进出场都要推进，或落实责任到人，每天开个站立会，就可以了解实际情况，进而做出调整。</p>
+<p>踩过坑的人都懂。</p>
+<h1 id="不联网安装"><a href="#不联网安装" class="headerlink" title="不联网安装"></a>不联网安装</h1><p>总是环境需要，不能联网。准确的说是有内网，不能连互联网。工作还是要做的，没有苦难，制造苦难也要上。</p>
+<p>还有一种情况是迁移。</p>
+<p>参考：<a href="http://crboy.logdown.com/posts/141615-install-redmine-on-windows" target="_blank" rel="noopener">在 Windows 上安裝 Redmine 2.3.0 的筆記</a></p>
+<h2 id="安装配置环境"><a href="#安装配置环境" class="headerlink" title="安装配置环境"></a>安装配置环境</h2><p>railsInstaller3.2.0 + SqlServer2012 + SVN</p>
+<h2 id="打包现有应用依赖"><a href="#打包现有应用依赖" class="headerlink" title="打包现有应用依赖"></a>打包现有应用依赖</h2><p>进入redmine目录，执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle package</span><br></pre></td></tr></table></figure>
+<p>在$REDMINE\vender\cache\目录下所有的gem包都在里面了。</p>
+<p>这个文件也需要：$REDMINE\Gemfile.lock，gem文件之间的依赖定义；</p>
+<h2 id="安装依赖–local"><a href="#安装依赖–local" class="headerlink" title="安装依赖–local"></a>安装依赖–local</h2><p>将上述gem包copy到本地比如d:\pm\gem.local目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd d:\pm\gem.local</span><br><span class="line">gem install -l *</span><br></pre></td></tr></table></figure>
+<ol>
+<li><code>Gemfile.lock</code> 放回 <code>$REDMINE</code></li>
+<li>执行以下命令</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd $REDMINE  </span><br><span class="line">bundle install --without development test rmagick --local</span><br></pre></td></tr></table></figure>
+<p>修改数据库配置，然后就差不多可以运行redmine了。</p>
+<h1 id="填坑清单"><a href="#填坑清单" class="headerlink" title="填坑清单"></a>填坑清单</h1><h2 id="无法获取speck文件"><a href="#无法获取speck文件" class="headerlink" title="无法获取speck文件"></a>无法获取speck文件</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">D:\PM&gt;gem sources --add https://gems.ruby-china.org/</span><br><span class="line">Error fetching https://gems.ruby-china.org/:</span><br><span class="line">        no such name (https://gems.ruby-china.org/specs.4.8.gz)</span><br></pre></td></tr></table></figure>
+<p>网络缘故。GFW，或者工作地点的网络有代理。命令行下倒是可以配置代理，只是可惜不知道如何配置代理认证。怎么都连不上网。回家宽带一切都正常了。</p>
+<h2 id="gemfiles中的版本号"><a href="#gemfiles中的版本号" class="headerlink" title="gemfiles中的版本号"></a>gemfiles中的版本号</h2><p>（&gt;4.0）指定版本是4.*，而不能是5.*。（&gt;4.2.0）指定版本是4.2.<em>，而不能是4.3.\</em>。和传统意义上的理解不一样，尤其要注意，在此处栽过不止一次。比如MSSSQL的驱动包 tiny_tds安装。</p>
+<h3 id="gem常用命令"><a href="#gem常用命令" class="headerlink" title="gem常用命令"></a>gem常用命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gem install [gemname]	// 联网安装指定gem包</span><br><span class="line">gem install [gemname] -v 0.7.0  // 联网安装指定版本的gem包</span><br><span class="line">gem install [gemname] -l // 从本地安装指定gem包</span><br><span class="line">gem uninstall [gemname] // 卸载gem包</span><br><span class="line">gem list --local  // 查看本地安装了哪些gem包</span><br></pre></td></tr></table></figure>
+<h2 id="railsInstaller"><a href="#railsInstaller" class="headerlink" title="railsInstaller"></a>railsInstaller</h2><p>版本一定要选择3.2.0，只有这个3.2.0符合Redmine3.3的“ ruby2.0，rails4.2”的要求；最新版3.3.0中，rails5.0已经超出了rails（&gt;4.2）要求；</p>
+<h2 id="系统找不到路径"><a href="#系统找不到路径" class="headerlink" title="系统找不到路径"></a>系统找不到路径</h2><p>railsInstaller3.2.0安装后的部分脚本有路径问题。3.1.1一切还正常。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rails -v</span><br><span class="line">系统找不到指定的路径。</span><br></pre></td></tr></table></figure>
+<p>可以尝试这么解决：windows下改bat，linux改sh文件：比如rails.bat 。其他命令如bundle等有此问题的，一样的方法修改。<a href="https://stackoverflow.com/questions/35545361/rails-the-system-cannot-find-the-path-specified" target="_blank" rel="noopener">参考</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">​```shell</span><br><span class="line">@ECHO OFF</span><br><span class="line">IF NOT "%~f0" == "~f0" GOTO :WinNT</span><br><span class="line">ECHO.This version of Ruby has not been built with support for Windows 95/98/Me.</span><br><span class="line">GOTO :EOF</span><br><span class="line">:WinNT</span><br><span class="line">@"%~dp0ruby.exe" "%~dpn0" %*</span><br></pre></td></tr></table></figure>
+<h2 id="no-such-file-tiny-tds-0-6-2"><a href="#no-such-file-tiny-tds-0-6-2" class="headerlink" title="no such file tiny_tds.0.6.2"></a>no such file tiny_tds.0.6.2</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">D:\PM\redmine-3.3.3&gt;bundle exec rake generate_secret_token</span><br><span class="line">rake aborted!</span><br><span class="line">LoadError: cannot load such file -- tiny_tds/tiny_tds</span><br></pre></td></tr></table></figure>
+<p>又一次，最严重的一次关于版本的碰撞。直接去研究了gem包的管理；</p>
+<p>连接SQL Server时，必须要用到这个gem，但是0.6.2这个版本在windows下有bug（<a href="http://www.redmine.org/boards/2/topics/49379?r=49627#message-49627" target="_blank" rel="noopener">参考</a>），必须至少升级到0.7.0；但是，redmine的gemfile中，直接定义写死了必须是(~&gt;0.6.2)，这就坑了。</p>
+<p>果断修改gemfile，去掉版本定义，用最新版。或者改为(~&gt;0.7.0)；</p>
+<p>这里附上我在官方讨论区给同样碰上此问题的歪果仁的回复。<a href="http://www.redmine.org/boards/2/topics/49379?r=53132#message-53132" target="_blank" rel="noopener">链接</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">i meet this error too. redmine-3.3.3 + SQL Server 2012 + railsinstaller-3.2.0.exe.</span><br><span class="line"></span><br><span class="line">just to fix it like this step:</span><br><span class="line">1. open redmine-3.3.3\Gemfile,and find A replace to B,</span><br><span class="line">A:</span><br><span class="line">gem "tiny_tds", "~&gt; 0.6.2", :platforms =&gt; [:mri, :mingw, :x64_mingw]</span><br><span class="line">B:</span><br><span class="line">gem "tiny_tds", "~&gt; 0.7.0", :platforms =&gt; [:mri, :mingw, :x64_mingw]</span><br><span class="line">2. then </span><br><span class="line">gem install tiny_tds -v 0.7.0 </span><br><span class="line">3. all is OK;</span><br><span class="line"></span><br><span class="line">reason：</span><br><span class="line">1. Peter Shannon wrote:</span><br><span class="line"></span><br><span class="line">tiny_tds 0.6.0 is bugged with Windows. Install 0.7.0 to fix.</span><br><span class="line"></span><br><span class="line">2. gemfile define the tiny_tds allowed between (&gt;=0.6.2,&lt;0.7.0)</span><br><span class="line"></span><br><span class="line">and from internet,there is another writing like:</span><br><span class="line">gem "tiny_tds" </span><br><span class="line">do not define the tiny_tds version，you also can try it；</span><br><span class="line"></span><br><span class="line">just fine！</span><br><span class="line">good luck！</span><br></pre></td></tr></table></figure>
+<h2 id="无法创建issue等"><a href="#无法创建issue等" class="headerlink" title="无法创建issue等"></a>无法创建issue等</h2><p>安装时没有执行这个命令装载默认配置数据</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RAILS_ENV=production REDMINE_LANG=zh bundle exec rake redmine:load_default_data</span><br></pre></td></tr></table></figure>
+<p>补救：</p>
+<p>点击“管理”链接，会提示你“装载默认数据和流程”，同意即可；</p>
+<h2 id="redmine-internal-error"><a href="#redmine-internal-error" class="headerlink" title="redmine internal error"></a>redmine internal error</h2><p>访问部分页面，内部错误。这时候要回忆一下，刚刚修改过什么，或者安装过什么插件没。针对性解决之。</p>
+<p>一般是没有更新数据库，如下解决：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rake db:migrate RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<p>或者更新插件数据库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rake redmine:plugins:migrate RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<h2 id="redmine-404-error"><a href="#redmine-404-error" class="headerlink" title="redmine 404 error"></a>redmine 404 error</h2><p>查日志：没有找到对应模版。一般是插件安装不对。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ActionView::Template::Error (undefined method `accessor' for #&lt;ActiveRecord::Type::Value:0xb375628&gt;)</span><br></pre></td></tr></table></figure>
+<p>尝试运行以下命令解决：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle exec rake db:migrate RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<h2 id="redmine配置SVN后版本库不可以"><a href="#redmine配置SVN后版本库不可以" class="headerlink" title="redmine配置SVN后版本库不可以"></a>redmine配置SVN后版本库不可以</h2><p>查日志：ssl连接被拒绝，不信任。</p>
+<h3 id="配置SVN信任连接"><a href="#配置SVN信任连接" class="headerlink" title="配置SVN信任连接"></a>配置SVN信任连接</h3><p>如果你的svn仓库是<a href="https://10.29.132.21/prms/trunk/prms/，在redmine安装机子上运行此命令：" target="_blank" rel="noopener">https://10.29.132.21/prms/trunk/prms/，在redmine安装机子上运行此命令：</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">svn -l https://10.29.132.21/prms/trunk/prms/</span><br></pre></td></tr></table></figure>
+<p>p选择永久接受SSL认证即可。</p>
+<h2 id="局域网连接不上"><a href="#局域网连接不上" class="headerlink" title="局域网连接不上"></a>局域网连接不上</h2><h3 id="启动参数"><a href="#启动参数" class="headerlink" title="启动参数"></a>启动参数</h3><p>在启动命令后，加上以下代码，注意最前方有空格</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-b 0.0.0.0 -p 3000</span><br></pre></td></tr></table></figure>
+<h3 id="防火墙规则"><a href="#防火墙规则" class="headerlink" title="防火墙规则"></a>防火墙规则</h3><p>WinServer2012，防火墙：新建TCP In 规则，开放3000端口即可；</p>
+<ul>
+<li>插件安装失败或不好用</li>
+</ul>
+<p>插件安装失败，或者使用起来，部分页面内部错误，可能有以下原因：</p>
+<ul>
+<li>代码有缺陷，</li>
+<li>比如不支持此版本redmine，</li>
+<li>只支持MySQL，不兼容MsSql；比如 chart2；</li>
+<li>可能没有运行插件migrate命令</li>
+<li>最最没含量的，也是最容易栽跟头的就是：插件目录名字不对。好好看github说明。</li>
+</ul>
+<h1 id="Windows完整迁移指南"><a href="#Windows完整迁移指南" class="headerlink" title="Windows完整迁移指南"></a>Windows完整迁移指南</h1><p>Update：2017.07.19验证完毕，略有修订。<del>以下只是推理。还有待于验证。可行性比较大。</del></p>
+<p>服务器：WinServer 2012;</p>
+<h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>内网环境，另外一个项目需要用到。能否copy一份拿过去简单配置下就能用？</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="依赖包gems"><a href="#依赖包gems" class="headerlink" title="依赖包gems"></a>依赖包gems</h3><p>参考：<a href="## 打包现有应用的依赖">不联网安装，打包现有应用的依赖</a>，导出依赖包，压缩为redmine-gems.zip</p>
+<h3 id="rails环境"><a href="#rails环境" class="headerlink" title="rails环境"></a>rails环境</h3><ul>
+<li>railsInstaller3.2.0.exe<ul>
+<li>单独备份已有RailsInstaller\Ruby2.2.0\bin目录为RailsInstaller-patch.zip，做为bug修复包；</li>
+<li>原因：该版本默认安装好之后，此目录的部分bat文件，有bug，运行命令时提示“系统找不到对应路径”。</li>
+</ul>
+</li>
+<li>或 RailsInstaller安装目录压缩一份为RailsInstaller.zip</li>
+</ul>
+<h3 id="Redmine3-3-3，copy一份，"><a href="#Redmine3-3-3，copy一份，" class="headerlink" title="Redmine3.3.3，copy一份，"></a>Redmine3.3.3，copy一份，</h3><ul>
+<li>修改config/database.yml，关于数据库的配置信息：主机、数据库名、用户名、密码；</li>
+<li>备份redmine目录下的plugins目录为plugins.zip，清空plugins目录；</li>
+<li>打包:整体打包为redmine3.3.3.zip。</li>
+</ul>
+<h3 id="数据库用户准备"><a href="#数据库用户准备" class="headerlink" title="数据库用户准备"></a>数据库用户准备</h3><p>MsSql，新建数据库比如redmine-test，新建新用户比如redmine-tt，确保对目标数据库确保有权限，用户角色勾选db-owner；</p>
+<p>测试代码，命令行输入，正常登录即可；</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">osql -S localhost -U redmine-tt -P redmine-tt</span><br></pre></td></tr></table></figure>
+<h2 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h2><h3 id="安装Rails环境"><a href="#安装Rails环境" class="headerlink" title="安装Rails环境"></a>安装Rails环境</h3><ul>
+<li>方法一：使用安装包<ul>
+<li>运行railsInstaller3.2.0.exe，安装rails环境；</li>
+<li>如果备份的有RailsInstaller-patch.zip，解压缩覆盖即可；</li>
+</ul>
+</li>
+<li>方法二：使用压缩包<ul>
+<li>解压缩，比如E:\PM\RailsInstaller目录；</li>
+<li>配置用户环境变量Path，指向ruby的路径。比如“E:\PM\RailsInstaller\ruby\bin”</li>
+</ul>
+</li>
+</ul>
+<p>验证环境：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ruby -v</span><br><span class="line">gem -v</span><br><span class="line">rails -v</span><br><span class="line">git --verision</span><br></pre></td></tr></table></figure>
+<p>方法一会遇到提示“系统找不到对应路径”，请参考 <a href="#系统找不到路径">系统找不到路径</a> 解决；</p>
+<h3 id="部署Redmine"><a href="#部署Redmine" class="headerlink" title="部署Redmine"></a>部署Redmine</h3><ul>
+<li>解压redmine3.3.0.zip到目标服务器，比如，E:\PM\redmine3.3.0;</li>
+<li>检查plugins目录是否被清空；</li>
+<li>也可以再次检查数据库配置文件，命令行检查用户是否有权限；</li>
+</ul>
+<h3 id="安装gems包"><a href="#安装gems包" class="headerlink" title="安装gems包"></a>安装gems包</h3><p>解压redmine-gems.zip到目标服务器，比如，E:\PM\redmine-gems;</p>
+<p>本地安装gems包</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd E:\PM\redmine-gems</span><br><span class="line">gem intall *.gem --local</span><br></pre></td></tr></table></figure>
+<p>近60个左右，安装时间约30~50分钟；不要问我问什么这么慢，我想静静…..</p>
+<h3 id="环境依赖安装检查"><a href="#环境依赖安装检查" class="headerlink" title="环境依赖安装检查"></a>环境依赖安装检查</h3><p>因为本地已安装完毕gems包，所以这里不会碰上gem包欠缺。如提示缺包，请下载copy过来单独安装；</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle install --without development test rmagick</span><br></pre></td></tr></table></figure>
+<h3 id="数据库migrate"><a href="#数据库migrate" class="headerlink" title="数据库migrate"></a>数据库migrate</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rake db:migrate RAILS_ENV=production</span><br><span class="line">bundle exec rake generate_secret_token  RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<h3 id="尝试启动redmine"><a href="#尝试启动redmine" class="headerlink" title="尝试启动redmine"></a>尝试启动redmine</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rails server webrick -e production -b 0.0.0.0 -p 3000</span><br></pre></td></tr></table></figure>
+<h3 id="访问初始配置redmine"><a href="#访问初始配置redmine" class="headerlink" title="访问初始配置redmine"></a>访问初始配置redmine</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:3000   ##或者 http://yourserverip:3000</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>正常启动后，依据提示，</p>
+<ul>
+<li><p>配置管理员账号。admin/admin，修改默认密码。</p>
+</li>
+<li><p>管理—&gt;装载默认配置及流程（如不初始化，可能会有创建不了issue等莫名其妙的问题）</p>
+</li>
+<li><p>一般来说，管理界面出现这个提示，是因为安装时未执行装载默认数据的操作：</p>
+</li>
+<li><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RAILS_ENV=production REDMINE_LANG=zh bundle exec rake redmine:load_default_data</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="安装插件-1"><a href="#安装插件-1" class="headerlink" title="安装插件"></a>安装插件</h3><p>停止redmine，恢复plugins目录内容，</p>
+<p>这两条命令都来一遍吧：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rake redmine:plugins:migrate RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rake db:migrate RAILS_ENV=production</span><br></pre></td></tr></table></figure>
+<p>再次启动</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rails server webrick -e production -b 0.0.0.0 -p 3000</span><br></pre></td></tr></table></figure>
+<p>接下来，就是参考配置喽。</p>
+<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>其实工具并不能自动解决管理紊乱问题，只能提供一定程度地支持。项目管理最大的挑战仍旧来源于人，尤其是干系人。其次在于流程的梳理，职责的划分。风险识别，解决，是每一天的功课。</p>
+<p>沟通到位，分工合理，适时跟进，切实调整，配合神器一样的工具Redmine，事半功倍。</p>
+<p>准备学习更新下，Docker环境下的安装配置。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redmine/" rel="tag"># redmine</a>
+          
+            <a href="/tags/SQL-Server2012/" rel="tag"># SQL Server2012</a>
+          
+            <a href="/tags/离线/" rel="tag"># 离线</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/17/O1-8-02-Docker搭建Django-Mariadb环境/" rel="prev" title="Docker搭建Django+Mariadb环境">
+                Docker搭建Django+Mariadb环境 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Kang.cunhua</p>
+              <p class="site-description motion-element" itemprop="description">从事过开发的传统运维工程师，带过运维团队的开发项目经理，假装懂技术地混迹于质量改进努力的架构师；</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#环境与搭建"><span class="nav-number">1.</span> <span class="nav-text">环境与搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目的"><span class="nav-number">1.1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#软件准备"><span class="nav-number">1.2.</span> <span class="nav-text">软件准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">1.3.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#环境和APP"><span class="nav-number">1.3.1.</span> <span class="nav-text">环境和APP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联网安装"><span class="nav-number">1.3.2.</span> <span class="nav-text">联网安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库初始化"><span class="nav-number">1.3.3.</span> <span class="nav-text">数据库初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动Redmine"><span class="nav-number">1.3.4.</span> <span class="nav-text">启动Redmine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装插件"><span class="nav-number">1.3.5.</span> <span class="nav-text">安装插件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置"><span class="nav-number">1.4.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#培训推广"><span class="nav-number">1.4.1.</span> <span class="nav-text">培训推广</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#不联网安装"><span class="nav-number">2.</span> <span class="nav-text">不联网安装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装配置环境"><span class="nav-number">2.1.</span> <span class="nav-text">安装配置环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#打包现有应用依赖"><span class="nav-number">2.2.</span> <span class="nav-text">打包现有应用依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装依赖–local"><span class="nav-number">2.3.</span> <span class="nav-text">安装依赖–local</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#填坑清单"><span class="nav-number">3.</span> <span class="nav-text">填坑清单</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#无法获取speck文件"><span class="nav-number">3.1.</span> <span class="nav-text">无法获取speck文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gemfiles中的版本号"><span class="nav-number">3.2.</span> <span class="nav-text">gemfiles中的版本号</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#gem常用命令"><span class="nav-number">3.2.1.</span> <span class="nav-text">gem常用命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#railsInstaller"><span class="nav-number">3.3.</span> <span class="nav-text">railsInstaller</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统找不到路径"><span class="nav-number">3.4.</span> <span class="nav-text">系统找不到路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#no-such-file-tiny-tds-0-6-2"><span class="nav-number">3.5.</span> <span class="nav-text">no such file tiny_tds.0.6.2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无法创建issue等"><span class="nav-number">3.6.</span> <span class="nav-text">无法创建issue等</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redmine-internal-error"><span class="nav-number">3.7.</span> <span class="nav-text">redmine internal error</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redmine-404-error"><span class="nav-number">3.8.</span> <span class="nav-text">redmine 404 error</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redmine配置SVN后版本库不可以"><span class="nav-number">3.9.</span> <span class="nav-text">redmine配置SVN后版本库不可以</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置SVN信任连接"><span class="nav-number">3.9.1.</span> <span class="nav-text">配置SVN信任连接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#局域网连接不上"><span class="nav-number">3.10.</span> <span class="nav-text">局域网连接不上</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动参数"><span class="nav-number">3.10.1.</span> <span class="nav-text">启动参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防火墙规则"><span class="nav-number">3.10.2.</span> <span class="nav-text">防火墙规则</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Windows完整迁移指南"><span class="nav-number">4.</span> <span class="nav-text">Windows完整迁移指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前提"><span class="nav-number">4.1.</span> <span class="nav-text">前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">4.2.</span> <span class="nav-text">准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#依赖包gems"><span class="nav-number">4.2.1.</span> <span class="nav-text">依赖包gems</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rails环境"><span class="nav-number">4.2.2.</span> <span class="nav-text">rails环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redmine3-3-3，copy一份，"><span class="nav-number">4.2.3.</span> <span class="nav-text">Redmine3.3.3，copy一份，</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库用户准备"><span class="nav-number">4.2.4.</span> <span class="nav-text">数据库用户准备</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装-1"><span class="nav-number">4.3.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装Rails环境"><span class="nav-number">4.3.1.</span> <span class="nav-text">安装Rails环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部署Redmine"><span class="nav-number">4.3.2.</span> <span class="nav-text">部署Redmine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装gems包"><span class="nav-number">4.3.3.</span> <span class="nav-text">安装gems包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#环境依赖安装检查"><span class="nav-number">4.3.4.</span> <span class="nav-text">环境依赖安装检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库migrate"><span class="nav-number">4.3.5.</span> <span class="nav-text">数据库migrate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尝试启动redmine"><span class="nav-number">4.3.6.</span> <span class="nav-text">尝试启动redmine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问初始配置redmine"><span class="nav-number">4.3.7.</span> <span class="nav-text">访问初始配置redmine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装插件-1"><span class="nav-number">4.3.8.</span> <span class="nav-text">安装插件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#后续"><span class="nav-number">5.</span> <span class="nav-text">后续</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Kang.cunhua</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
